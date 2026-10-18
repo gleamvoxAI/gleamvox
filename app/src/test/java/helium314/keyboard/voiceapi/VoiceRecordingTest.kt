@@ -278,8 +278,9 @@ class LoudnessTest {
         assertEquals(1.0, Loudness.gainFor(-20.0))
         assertEquals(1.0, Loudness.gainFor(-75.0), "silence is not amplified")
         assertEquals(Math.pow(10.0, 27.0 / 20), Loudness.gainFor(-30.0), 1e-9)
-        assertEquals(Math.pow(10.0, 30.0 / 20), Loudness.gainFor(-40.0), 1e-9, "would need 37 dB: 30 at most")
-        assertEquals(Math.pow(10.0, 30.0 / 20), Loudness.gainFor(-60.0), 1e-9, "at most 30 dB")
+        assertEquals(Math.pow(10.0, 37.0 / 20), Loudness.gainFor(-40.0), 1e-9, "stage 5g-24: 37 dB (40 at most)")
+        assertEquals(Math.pow(10.0, 40.0 / 20), Loudness.gainFor(-48.0), 1e-9, "would need 45 dB: 40 at most")
+        assertEquals(Math.pow(10.0, 40.0 / 20), Loudness.gainFor(-60.0), 1e-9, "at most 40 dB")
     }
 
     @Test fun quietRecordingIsRaisedToAboutMinus3() {
@@ -291,7 +292,7 @@ class LoudnessTest {
         val veryQuiet = toneBuffer(0.5, amplitude = amplitudeOf(-60.0).toInt())
         veryQuiet.applyGain(Loudness.gainFor(Loudness.dbfs(veryQuiet.peak().toDouble())))
         val v = Loudness.dbfs(veryQuiet.peak().toDouble())
-        assertTrue(v > -31 && v < -29, "30 dB at most: $v")
+        assertTrue(v > -21 && v < -19, "40 dB at most: $v")
         val loud = toneBuffer(0.5, amplitude = 32000)
         loud.applyGain(3.0) // clipped to -32768..32767, no wrap-around
         assertTrue(loud.peak() in 32767..32768, "${loud.peak()}")

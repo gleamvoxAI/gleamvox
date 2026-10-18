@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-et/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Gleamvoxi õigekirjakontroll</string>
+    <string name="ime_settings">Gleamvoxi seadistused</string>
+    <string name="android_spell_checker_settings">Gleamvoxi õigekirjakontrolli seadistused</string>
+    <string name="gesture_data_background_gathering_info_message">Taustal toimuva andmete kogumise sisselülitamine võimaldab Gleamvoxil salvestada viipeid, mida sa teistes rakendustes teed. See on viipekirjutamise projekti jaoks väga kasulik, kuna võimaldab koguda märkimisväärse hulga andmeid, kuigi nende kvaliteet on madalam kui aktiivse kogumise puhul. Taustal toimuv andmete kogumine ei asenda aktiivselt kogutud andmeid, vaid on mõeldud täienduseks, kuna andmete kvaliteet on olulisem kui kvantiteet.\n\n Taustal kogumisel on suur oht, et kogutakse andmeid, mida võid pidada liiga isiklikuks, et neid jagada, isegi kui need avaldatakse anonüümselt. Seetõttu soovime selgitada, millal viipeandmeid kogutakse ja kuidas saad seda mõjutada.\n\nVideo, mis selgitab taustal andmete kogumist lähemalt, leiad selle ekraani paremas alumises nurgas olevast linkide plokist.</string>
+</resources>

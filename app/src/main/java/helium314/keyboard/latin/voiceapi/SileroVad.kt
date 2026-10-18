@@ -39,7 +39,19 @@ object SileroVad {
     fun preload(context: Context) {
         if (model != null || loading != null) return
         val app = context.applicationContext
-        loading = loader.submit<Model?> { load { app.assets.open(ASSET).use { it.readBytes() } } }
+        loading = loader.submit<Model?> {
+            val t0 = android.os.SystemClock.elapsedRealtime()
+            load { app.assets.open(ASSET).use { it.readBytes() } }.also { loadMs = android.os.SystemClock.elapsedRealtime() - t0 }
+        }
+    }
+
+    /** stage 5g-24: how long loading took (ms, -1 not yet), and the state at a tap, for the journal */
+    @Volatile var loadMs = -1L
+        private set
+    fun state(): String = when {
+        model != null -> "silero ready" + (if (loadMs >= 0) " (loaded in $loadMs ms)" else "")
+        loading != null -> "silero loading"
+        else -> "silero not loaded"
     }
 
     /** a new stream for one recording: waits for the model at most [waitMs] (on the recording thread, never the main one) */

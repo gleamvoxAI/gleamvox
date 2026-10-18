@@ -51,6 +51,8 @@ sealed class VoiceTrace {
     class Noise(val speechPercent: Int, val noiseDbfs: Double, val droppedPhrases: Int) : VoiceTrace()
     /** stage 5g-3: the phone's peak before the headset was asked for and after it was given back */
     class PhoneLevels(val beforeDbfs: Double, val afterDbfs: Double) : VoiceTrace()
+    /** stage 5g-24: the phone's peak in 100 ms windows of the first 800 ms */
+    class EarlyLevels(val dbfs: List<Int>) : VoiceTrace()
     /** stage 5g-7: the peaks of the headset (or car) and of the phone when the probation decided */
     class ProbationLevels(val headsetDbfs: Double, val phoneDbfs: Double, val afterUpMs: Long = 0, val speechFrames: Int = 0) : VoiceTrace()
     /** stage 5g-10: nobody spoke while the channel was tried: the phone goes on, no strike */
@@ -106,6 +108,10 @@ class VoiceAttempt(val at: Long) {
     /** stage 5g-2: ms from the tap to the first recorded frame, and ms spent on the headset (until it came up or was given up) */
     var firstFrameMs: Long? = null
     var headsetMs: Long? = null
+    /** stage 5g-24: how the start went (touch, opening the microphone by steps, the process and Silero) */
+    var startInfo: String? = null
+    /** stage 5g-24: the phone's peak in 100 ms windows of the first 800 ms (dBFS) */
+    var earlyLevels: String? = null
     /** stage 5g-3: the Bluetooth devices at the tap (types, inputs and outputs, last 2 characters of the address) and why the source */
     var btDevices: String? = null
     var micReason: String? = null
@@ -175,7 +181,7 @@ class VoiceAttempt(val at: Long) {
             "car" to car, "playbackConfigs" to playbackConfigs, "focusAtMs" to focusAtMs, "chunks" to chunks, "retried" to retried,
             "keptForRetry" to keptForRetry, "carMute" to carMute, "carMuteSystem" to carMuteSystem,
             "sameFrames" to sameFrames, "bothFrames" to bothFrames, "phoneMs" to phoneMs, "headsetRecMs" to headsetRecMs, "speechPercent" to speechPercent, "noiseDb" to noiseDb,
-            "noisePhrases" to noisePhrases, "effects" to effects)
+            "noisePhrases" to noisePhrases, "effects" to effects, "startInfo" to startInfo, "earlyLevels" to earlyLevels)
         for ((k, v) in fields) when (v) {
             is String -> put(k, JsonPrimitive(v))
             is Number -> put(k, JsonPrimitive(v))
@@ -192,6 +198,8 @@ class VoiceAttempt(val at: Long) {
         notStarted?.let { "not started: $it" },
         started?.takeIf { it }?.let { "recording" + (source?.let { s -> " $s" } ?: "") + (mic?.let { m -> " ($m)" } ?: "") },
         firstFrameMs?.let { "first sound after $it ms" },
+        startInfo?.let { "start: $it" },
+        earlyLevels?.let { "levels 0–800 ms: $it" },
         headsetMs?.let { "headset tried $it ms" },
         btDevices?.let { "bluetooth: $it" },
         micReason?.let { "microphone: $it" },
@@ -256,7 +264,7 @@ class VoiceAttempt(val at: Long) {
                 uploadStatus = i("uploadStatus"); uploadMs = l("uploadMs"); uploadKb = l("uploadKb")
                 words = i("words"); inserted = s("inserted"); place = s("place"); error = s("error"); step = s("step")
                 mode = s("mode"); phrases = i("phrases"); failedPhrases = i("failedPhrases"); mic = s("mic")
-                firstFrameMs = l("firstFrameMs"); headsetMs = l("headsetMs"); btDevices = s("btDevices"); micReason = s("micReason")
+                firstFrameMs = l("firstFrameMs"); headsetMs = l("headsetMs"); startInfo = s("startInfo"); earlyLevels = s("earlyLevels"); btDevices = s("btDevices"); micReason = s("micReason")
                 phoneBeforeDb = i("phoneBeforeDb"); phoneAfterDb = i("phoneAfterDb")
                 musicPlaying = b("musicPlaying"); focusTaken = b("focusTaken"); resume = s("resume"); probeHeadsetDb = i("probeHeadsetDb"); probePhoneDb = i("probePhoneDb")
                 probeMs = l("probeMs"); probeFrames = i("probeFrames"); strike = s("strike")

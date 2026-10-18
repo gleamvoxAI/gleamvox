@@ -306,7 +306,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         // Add word to user dictionary if it is in no other dictionary except user history dictionary (i.e. typed again).
         val sv = Settings.getValues()
         if (sv.mAddToPersonalDictionary // require the opt-in
-            && sv.mAutoCorrectEnabled == sv.mAutoCorrectionEnabledPerUserSettings // don't add if user wants autocorrect but input field does not, see https://github.com/HeliBorg/HeliBoard/issues/427#issuecomment-1905438000
+            && (sv.mAutoCorrectEnabled == sv.mAutoCorrectionEnabledPerUserSettings || sv.mInputAttributes.mSuggestionsByTapOnly) // (ux-5: a tap-only field still learns) don't add if user wants autocorrect but input field does not, see https://github.com/HeliBorg/HeliBoard/issues/427#issuecomment-1905438000
             && dictionaryGroups[0].hasDict(Dictionary.TYPE_USER_HISTORY) // require personalized suggestions
             && !wasAutoCapitalized // we can't be 100% sure about what the user intended to type, so better don't add it
             && words.size == 1 // only single words
@@ -393,7 +393,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     override fun learnNewWord(word: String, wasAutoCapitalized: Boolean, likelyTypo: Boolean, explicit: Boolean): Boolean {
         val sv = Settings.getValues()
         if (!sv.mAddToPersonalDictionary || word.length <= 1 || word.any { it.isDigit() } || word.splitOnWhitespace().size != 1) return false
-        if (sv.mAutoCorrectEnabled != sv.mAutoCorrectionEnabledPerUserSettings) return false // the field wants no autocorrection: unclear what the person meant
+        if (sv.mAutoCorrectEnabled != sv.mAutoCorrectionEnabledPerUserSettings && !sv.mInputAttributes.mSuggestionsByTapOnly) return false // the field wants no autocorrection: unclear what the person meant
         // ux-3: the same way for a tap and for "typed and left" (the owner: a tap saved the word, the automatic way did not):
         // the same language choice (with several languages "clearly preferred" is often unknown), no refusal for a capital
         // letter at the start of a sentence, except an ordinary word whose lower case form the dictionary knows

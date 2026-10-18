@@ -96,8 +96,8 @@
     <string name="settings_category_additional_keys">Teclas adicionales</string>
     <string name="prefs_long_press_keyboard_to_change_lang">Cambiar método de entrada con la barra espaciadora</string>
     <string name="prefs_long_press_keyboard_to_change_lang_summary">Al presionar por mucho tiempo la barra espaciadora, aparecerá el menú de selección del método de entrada</string>
-    <string name="spell_checker_service_name">Corrector ortográfico de HeliBoard</string>
-    <string name="android_spell_checker_settings">Ajustes del corrector ortográfico de HeliBoard</string>
+    <string name="spell_checker_service_name">Corrector ortográfico de AI Keyboard</string>
+    <string name="android_spell_checker_settings">Ajustes del corrector ortográfico de AI Keyboard</string>
     <string name="prefs_keyboard_height_scale">Escala de altura del teclado</string>
     <string name="delete_swipe">Borrar deslizando</string>
     <string name="delete_swipe_summary">Deslice el dedo por la tecla Borrar para seleccionar y eliminar porciones más grandes de texto de una vez</string>
@@ -108,7 +108,7 @@
     <string name="settings_category_correction">Correcciones</string>
     <string name="settings_category_experimental">Experimental</string>
     <string name="settings_category_input">Entrada</string>
-    <string name="ime_settings">Ajustes de HeliBoard</string>
+    <string name="ime_settings">Ajustes de AI Keyboard</string>
     <string name="settings_category_suggestions">Sugerencias</string>
     <string name="settings_category_miscellaneous">Otros</string>
     <string name="number_row">Fila de números</string>
@@ -513,7 +513,7 @@
     <string name="gesture_data_background_gathering_manual_save">Descartar por defecto</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Los datos se guardan manualmente mediante la tecla de la barra de herramientas</string>
     <string name="gesture_data_background_gathering_info">Más información</string>
-    <string name="gesture_data_background_gathering_info_message">Activar la recopilación de datos en segundo plano permite a Heliboard registrar los gestos que escribes en otras aplicaciones. Esto es muy útil para el proyecto de escritura gestual, ya que puede producir una cantidad considerable de datos, aunque con una calidad inferior a la recopilación activa. La recopilación de datos de antecedentes no es un sustituto para los datos recopilados activamente, sino que está destinada a ser una adición, ya que la calidad de los datos es más importante que la cantidad.\n\n La recopilación de antecedentes tiene un alto potencial para recopilar datos que puede considerar demasiado privados para compartir, incluso cuando se publican anónimamente. Por este motivo queremos aclarar cuándo se recopilan los datos de gestos y cómo puedes influir en ellos.\n\n Puedes encontrar un video que explica más sobre la recolección de datos en el fondo en la sección de enlaces en la parte inferior derecha de esta pantalla.</string>
+    <string name="gesture_data_background_gathering_info_message">Activar la recopilación de datos en segundo plano permite a AI Keyboard registrar los gestos que escribes en otras aplicaciones. Esto es muy útil para el proyecto de escritura gestual, ya que puede producir una cantidad considerable de datos, aunque con una calidad inferior a la recopilación activa. La recopilación de datos de antecedentes no es un sustituto para los datos recopilados activamente, sino que está destinada a ser una adición, ya que la calidad de los datos es más importante que la cantidad.\n\n La recopilación de antecedentes tiene un alto potencial para recopilar datos que puede considerar demasiado privados para compartir, incluso cuando se publican anónimamente. Por este motivo queremos aclarar cuándo se recopilan los datos de gestos y cómo puedes influir en ellos.\n\n Puedes encontrar un video que explica más sobre la recolección de datos en el fondo en la sección de enlaces en la parte inferior derecha de esta pantalla.</string>
     <string name="gesture_data_background_gathering_indicator">Indicador de la recopilación de datos</string>
     <string name="gesture_data_background_gathering_indicator_message">Siempre que se puedan registrar datos gestuales, verá un icono indicador en la esquina inferior izquierda del teclado. Cuando el círculo esté lleno, significa que se ha registrado al menos un gesto y está listo para guardarse. Los datos se guardan mediante la tecla de la barra de herramientas (véase &lt;i&gt; %1$s &lt;/i&gt;) o automáticamente (cuando &lt;i&gt; %2$s &lt;/i&gt; está desactivado). El guardado automático suele producirse al cambiar de campo de texto o al cerrar el teclado, pero también puede ocurrir si el campo de texto cambia por algún otro motivo. Mientras se guardan los datos, el indicador se pondrá verde durante un breve periodo de tiempo.</string>
     <string name="gesture_data_background_gathering_control">¿Cómo controlar lo que se guarda?</string>

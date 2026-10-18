@@ -13,13 +13,15 @@ import android.os.Bundle
 class VoicePermissionActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // stage 5g-25: also "Nearby devices" (BLUETOOTH_CONNECT), to tell the car radio from a watch; nothing else
+        val permission = intent?.getStringExtra(EXTRA_PERMISSION)?.takeIf { it in ALLOWED } ?: Manifest.permission.RECORD_AUDIO
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                || checkSelfPermission(Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                || checkSelfPermission(permission) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             finish()
             return
         }
         if (savedInstanceState == null)
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_CODE)
+            requestPermissions(arrayOf(permission), REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -29,5 +31,7 @@ class VoicePermissionActivity : Activity() {
 
     companion object {
         private const val REQUEST_CODE = 1
+        const val EXTRA_PERMISSION = "permission"
+        private val ALLOWED = setOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
     }
 }

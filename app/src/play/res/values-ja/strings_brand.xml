@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-ja/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ime_settings">Gleamvoxの設定</string>
+    <string name="spell_checker_service_name">Gleamvoxスペルチェッカ</string>
+    <string name="android_spell_checker_settings">Gleamvoxスペルチェッカの設定</string>
+</resources>

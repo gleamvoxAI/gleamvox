@@ -12,6 +12,23 @@ class NumberWordsTest {
         for ((from, to) in pairs) assertEquals(to, c(from), from)
     }
 
+    /** stage 5g-24: the owner's counting "раз, два, три, четыре" (the first word was lost in the car, not by the numbers) */
+    @Test fun countingStartsWithRaz() {
+        check(
+            "Раз, два, три, четыре." to "1, 2, 3, 4.",
+            "раз два три" to "1 2 3",
+            "Проверка. Раз, два, три." to "Проверка. 1, 2, 3.",
+        )
+        // "раз" as a word stays
+        check(
+            "один раз, два раза" to "один раз, 2 раза",
+            "ещё раз, два раза подряд" to "ещё раз, 2 раза подряд",
+            "раз уж так вышло" to "раз уж так вышло",
+            "раз два раза" to "раз 2 раза",
+        )
+        assertEquals(4, NumberWords.apply("Раз, два, три, четыре.").converted)
+    }
+
     @Test fun percentsAndSimpleNumbers() = check(
         "сто процентов" to "100%",
         "Сто процентов." to "100%.",

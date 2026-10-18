@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-sv/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Gleamvoxs stavningskontroll</string>
+    <string name="android_spell_checker_settings">Inställningar för Gleamvoxs stavningskontroll</string>
+    <string name="ime_settings">Gleamvox-inställningar</string>
+    <string name="gesture_data_background_gathering_info_message">När du aktiverar insamling av bakgrundsdata kan Gleamvox registrera gester du skriver i andra appar. Det är mycket användbart för projektet med gestinmatning eftersom det kan ge stora mängder data, om än med lägre kvalitet än aktiv insamling. Insamling i bakgrunden ersätter inte aktivt insamlad data utan är ett komplement, eftersom datakvalitet är viktigare än mängd.\n\n Insamling i bakgrunden kan samla in data som du kan anse vara för privat för att dela, även om den publiceras anonymt. Därför vill vi förklara när gestdata samlas in och hur du kan påverka det.\n\n I länkdelen längst ned till höger på skärmen finns en video med mer information om insamling av bakgrundsdata.</string>
+</resources>

@@ -60,11 +60,9 @@ fun AboutScreen(
         SettingsWithoutKey.THIRD_PARTY_DICTIONARIES,
         SettingsWithoutKey.DICTIONARY_CHECK,
         SettingsWithoutKey.HIDDEN_FEATURES,
-        SettingsWithoutKey.GITHUB_WIKI,
-        SettingsWithoutKey.COMMUNITY_LINKS,
+        // play-3: no links to the wiki, the discussions and the page of the upstream project in the screens (the credit stays in the slogan)
         SettingsWithoutKey.GLEAMVOX_SOURCE,
         SettingsWithoutKey.GLEAMVOX_SITE,
-        SettingsWithoutKey.GITHUB,
         SettingsWithoutKey.SAVE_LOG,
     )
     SearchSettingsScreen(

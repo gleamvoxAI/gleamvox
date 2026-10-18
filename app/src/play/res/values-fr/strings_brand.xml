@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-fr/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Correcteur orthographique Gleamvox</string>
+    <string name="android_spell_checker_settings">Paramètres du correcteur orthographique Gleamvox</string>
+    <string name="ime_settings">Paramètres d\'Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">L\'activation de la collecte de données en arrière-plan permet à Gleamvox d\'enregistrer les gestes que vous saisissez dans d\'autres applications. Cela est très utile pour le projet de saisie gestuelle, car cela peut produire une quantité considérable de données, bien qu\'à une qualité inférieure à celle de la collecte active. La collecte de données en arrière-plan n\'est pas un remplacement pour les données collectées activement, elle est destinée à être un complément, car la qualité des données est plus importante que la quantité.\n\n La collecte en arrière-plan présente un potentiel élevé de collecte de données que vous pourriez considérer trop privées pour les partager, même lorsqu\'elles sont publiées de manière anonyme. Pour cette raison, nous voulons clarifier quand les données gestuelles sont collectées et comment vous pouvez l\'influencer.\n\n Vous pouvez trouver une vidéo expliquant davantage la collecte de données en arrière-plan dans la section des liens en bas à droite de cet écran.</string>
+</resources>

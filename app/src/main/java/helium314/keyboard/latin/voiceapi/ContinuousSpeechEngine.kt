@@ -164,6 +164,7 @@ class ContinuousSpeechEngine(
         override fun onHeadsetHeard() { listener?.onTrace(VoiceTrace.HeadsetHeard) }
 
         override fun onPhoneLevels(beforeDbfs: Double, afterDbfs: Double) { listener?.onTrace(VoiceTrace.PhoneLevels(beforeDbfs, afterDbfs)) }
+        override fun onEarlyLevels(dbfs: List<Int>) { listener?.onTrace(VoiceTrace.EarlyLevels(dbfs)) }
         override fun onProbationLevels(headsetDbfs: Double, phoneDbfs: Double, afterUpMs: Long, speechFrames: Int) {
             listener?.onTrace(VoiceTrace.ProbationLevels(headsetDbfs, phoneDbfs, afterUpMs, speechFrames))
         }

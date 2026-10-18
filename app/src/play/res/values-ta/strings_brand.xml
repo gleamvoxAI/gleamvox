@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-ta/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Gleamvox எழுத்துப்பிழை சரிபார்ப்பு</string>
+    <string name="ime_settings">Gleamvox அமைப்புகள்</string>
+    <string name="android_spell_checker_settings">Gleamvox எழுத்துப்பிழை சரிபார்ப்பு அமைப்புகள்</string>
+    <string name="gesture_data_background_gathering_info_message">பின்னணி தரவு சேகரிப்பை இயக்குவது, மற்ற பயன்பாடுகளில் நீங்கள் தட்டச்சு செய்யும் சைகைகளை Gleamvox பதிவு செய்ய அனுமதிக்கிறது. செயலில் சேகரிப்பை விடத் தரம் குறைவாக இருந்தாலும், கணிசமான அளவு தரவை உருவாக்கக்கூடியதால், இது சைகை தட்டச்சு திட்டத்திற்கு மிகவும் பயனுள்ளதாகும். தரவின் தரம் அளவை விட முக்கியம் என்பதால், பின்னணி தரவு சேகரிப்பு செயலில் சேகரிக்கப்பட்ட தரவுக்கு மாற்று அல்ல; அது ஒரு கூடுதலாகவே கருதப்படுகிறது.\n\nஅநாமதேயமாக வெளியிடப்பட்டாலும், பகிர மிகவும் தனிப்பட்டதாக நீங்கள் கருதக்கூடிய தரவைச் சேகரிக்கும் அதிக வாய்ப்பு பின்னணி சேகரிப்புக்கு உண்டு. இதனால், சைகை தரவு எப்போது சேகரிக்கப்படுகிறது, அதை நீங்கள் எவ்வாறு கட்டுப்படுத்தலாம் என்பதைத் தெளிவுபடுத்த விரும்புகிறோம்.\n\nபின்னணி தரவு சேகரிப்பு பற்றி மேலும் விளக்கும் வீடியோவை இந்தத் திரையின் கீழ் வலதுபுறத்தில் உள்ள இணைப்புகள் பகுதியில் காணலாம்.</string>
+</resources>

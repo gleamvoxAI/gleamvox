@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-it/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="show_setup_wizard_icon_summary">Mostra Gleamvox tra le app di Android</string>
+    <string name="spell_checker_service_name">Controllo ortografico Gleamvox</string>
+    <string name="android_spell_checker_settings">Impostazioni del controllo ortografico Gleamvox</string>
+    <string name="ime_settings">Impostazioni di Gleamvox</string>
+    <string name="about_wiki_link">Gleamvox Wiki</string>
+    <string name="gesture_data_background_gathering_info_message">Attivando la raccolta dati in background, Gleamvox può registrare i gesti che digiti in altre app. È molto utile per il progetto di digitazione tramite gesti, perché genera molti dati, anche se di qualità inferiore rispetto alla raccolta attiva. Questa modalità non sostituisce la raccolta attiva ma la integra, dato che la qualità dei dati conta più della quantità.\n\nLa raccolta in background ha un potenziale elevato di acquisire dati che potresti considerare troppo privati da condividere, persino se anonimizzati. Per questo vogliamo chiarire quando avviene la raccolta e come puoi gestirla.\n\nTrovi un video esplicativo sulla raccolta in background nella sezione dei link in basso a destra.</string>
+</resources>

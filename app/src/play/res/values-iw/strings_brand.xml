@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-iw/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="android_spell_checker_settings">הגדרות בודק האיות של Gleamvox</string>
+    <string name="spell_checker_service_name">בודק האיות של Gleamvox</string>
+    <string name="ime_settings">הגדרות Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">הפעלת איסוף נתונים ברקע מאפשרת ל-Gleamvox לתעד שימוש בהקלדה במחוות ביישומים אחרים. המידע שימושי מאד לפרויקט ההקלדה במחוות מאחר והוא עשוי להפיק כמות ניכרת של נתונים, גם אם הוא באיכות נמוכה מזו של איסוף פעיל. איסוף נתונים ברקע אינו תחליף לאיסוף פעיל של נתונים, אלא נועד להוות תוספת, מאחר ואיכות הנתונים חשובה מכמותם.\n\n לאיסוף ברקע יש פוטנציאל גדול לצבור מידע שייחשב בעיניך פרטי מכדי לשתף, גם כאשר יפורסם בעילום שם. מסיבה זו ברצוננו להבהיר מתי נתוני שימוש המחוות הקלדה נצברים באופן פעיל וכיצד באפשרותך להשפיע על כך.\n\n באפשרותך למצוא סרטון הסבר מורחב אודות איסוף נתונים ברקע במקטע הקישורים בחלקו הימני התחתון של מסך זה.</string>
+</resources>

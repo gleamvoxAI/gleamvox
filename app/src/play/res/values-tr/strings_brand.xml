@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-tr/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="android_spell_checker_settings">Gleamvox yazım denetleyicisi ayarları</string>
+    <string name="spell_checker_service_name">Gleamvox yazım denetleyicisi</string>
+    <string name="ime_settings">Gleamvox ayarları</string>
+    <string name="gesture_data_background_gathering_info_message">Arka planda veri toplamayı açmak, Gleamvox\'un diğer uygulamalarda yazdığın hareketleri kaydetmesine olanak tanır. Bu, etkin toplamadan daha düşük kalitede de olsa hatırı sayılır miktarda veri üretebildiği için hareketle yazma projesi açısından çok yararlıdır. Arka planda veri toplama, etkin olarak toplanan verilerin yerine geçmez; veri kalitesi miktardan daha önemli olduğu için bir ek olarak düşünülmüştür.\n\n Arka planda toplamanın, anonim olarak yayınlansa bile paylaşmak için fazla özel bulabileceğin verileri toplama olasılığı yüksektir. Bu nedenle hareket verilerinin ne zaman toplandığını ve bunu nasıl etkileyebileceğini netleştirmek istiyoruz.\n\n Arka planda veri toplama hakkında daha fazla bilgi veren bir videoyu bu ekranın sağ alt kısmındaki bağlantılar bölümünde bulabilirsin.</string>
+</resources>

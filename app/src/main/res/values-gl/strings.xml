@@ -259,7 +259,7 @@
     <string name="theme_name_black" tools:keep="@string/theme_name_black">Negro</string>
     <string name="theme_name_indigo" tools:keep="@string/theme_name_indigo">Índigo</string>
     <string name="theme_name_ocean" tools:keep="@string/theme_name_ocean">Océano</string>
-    <string name="ime_settings">Axustes de HeliBoard</string>
+    <string name="ime_settings">Axustes de AI Keyboard</string>
     <string name="localized_number_row_summary">Preferir números traducidos sobre os latinos</string>
     <string name="replace_dictionary_message">Tes certeza de querer substituír o dicionario engadido \"%1$s\"?
 \n
@@ -271,7 +271,7 @@
     <string name="dictionary_link_text">aquí</string>
     <string name="select_color_functional_key_background">Fondo da tecla función</string>
     <string name="spell_checker_service_name">Revisor de Ortografía</string>
-    <string name="android_spell_checker_settings">Axustes do revisor de Ortografía de HeliBoard</string>
+    <string name="android_spell_checker_settings">Axustes do revisor de Ortografía de AI Keyboard</string>
     <string name="load_gesture_library_message">Vas precisar a biblioteca para \'%s\': As bibliotecas incompatibles podería estragar a app ao escribir.
 \n
 \nAviso: a carga de código externo é un risco de seguridade. Usa só bibliotecas de fontes de confianza.</string>
@@ -530,7 +530,7 @@
     <string name="gesture_data_background_gathering_manual_save">Descartar por defecto</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Os datos gárdanse manualmente coa tecla da barra de ferramentas</string>
     <string name="gesture_data_background_gathering_info">Máis información</string>
-    <string name="gesture_data_background_gathering_info_message">Ao activar a obtención de datos en segundo plano permites que Heliboard rexistre os xestos que escribes noutras apps. Isto é moi útil para o proxecto de escritura por xestos, xa que pode producir unha cantidade considerable de datos, aínda que de menor calidade que a obtención activa. A obtención de datos en segundo plano non substitúe os datos obtidos activamente; pensouse como un complemento, xa que a calidade dos datos é máis importante que a cantidade.\n\nA obtención en segundo plano ten un alto potencial de recoller datos que poderías considerar demasiado privados para compartir, mesmo publicados de forma anónima. Por iso queremos aclarar cando se están a obter datos de xestos e como podes influír niso.\n\nPodes atopar un vídeo que explica máis sobre a obtención de datos en segundo plano na sección de ligazóns na parte inferior dereita desta pantalla.</string>
+    <string name="gesture_data_background_gathering_info_message">Ao activar a obtención de datos en segundo plano permites que AI Keyboard rexistre os xestos que escribes noutras apps. Isto é moi útil para o proxecto de escritura por xestos, xa que pode producir unha cantidade considerable de datos, aínda que de menor calidade que a obtención activa. A obtención de datos en segundo plano non substitúe os datos obtidos activamente; pensouse como un complemento, xa que a calidade dos datos é máis importante que a cantidade.\n\nA obtención en segundo plano ten un alto potencial de recoller datos que poderías considerar demasiado privados para compartir, mesmo publicados de forma anónima. Por iso queremos aclarar cando se están a obter datos de xestos e como podes influír niso.\n\nPodes atopar un vídeo que explica máis sobre a obtención de datos en segundo plano na sección de ligazóns na parte inferior dereita desta pantalla.</string>
     <string name="gesture_data_background_gathering_indicator">Indicador de obtención de datos</string>
     <string name="gesture_data_background_gathering_indicator_message">Sempre que se poidan rexistrar datos de xestos, verás unha icona indicadora na parte inferior esquerda do teclado. Cando o círculo está cheo, recolleuse polo menos un xesto que agarda a ser gardado. Os datos gárdanse coa tecla da barra de ferramentas (mira &lt;i&gt;%1$s&lt;/i&gt;) ou automaticamente (cando &lt;i&gt;%2$s&lt;/i&gt; está desactivado). O gardado automático adoita ocorrer ao cambiar de campo de texto ou pechar o teclado, pero tamén pode ocorrer se o campo de texto cambia por outro motivo. Mentres se gardan os datos, o indicador ponse verde durante un momento.</string>
     <string name="gesture_data_background_gathering_control">Como controlar o que se garda</string>

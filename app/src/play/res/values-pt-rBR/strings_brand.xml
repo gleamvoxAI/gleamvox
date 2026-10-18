@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-pt-rBR/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ime_settings">Configurações do Gleamvox</string>
+    <string name="spell_checker_service_name">Verificador ortográfico do Gleamvox</string>
+    <string name="android_spell_checker_settings">Configurações do verificador ortográfico do Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">Ativar a coleta de dados em segundo plano permite que o Gleamvox registre os gestos que você digita em outros apps. Isso é muito útil para o projeto de digitação por gestos, pois pode produzir uma quantidade considerável de dados, embora com qualidade inferior à da coleta ativa. A coleta de dados em segundo plano não substitui os dados coletados ativamente; ela é um complemento, já que a qualidade dos dados é mais importante que a quantidade.\n\nA coleta em segundo plano tem grande potencial de registrar dados que você pode considerar privados demais para compartilhar, mesmo quando publicados anonimamente. Por isso, queremos esclarecer quando os dados de gestos estão sendo coletados e como você pode influenciar isso.\n\nVocê pode encontrar um vídeo explicando mais sobre a coleta de dados em segundo plano na seção de links no canto inferior direito desta tela.</string>
+</resources>

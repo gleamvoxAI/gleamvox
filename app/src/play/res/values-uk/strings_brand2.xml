@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the research project of the upstream is not part of the store version (the screen is hidden, there is no gesture library); no name of another project in the texts -->
+<resources>
+    <string name="gesture_data_promotion_message">Gesture data collection is not part of this version.</string>
+</resources>

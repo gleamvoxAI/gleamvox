@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-zh-rCN/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="gesture_data_background_gathering_info_message">开启后台数据收集后，Gleamvox 可以记录您在其他应用中的滑行输入。这对滑行输入项目非常有用，因为它可以产生相当可观的数据量，尽管质量低于主动收集。后台数据收集并不能替代主动收集的数据，而是作为补充，因为数据质量比数量更重要。\n\n后台收集很有可能收集到您认为过于私密而不宜分享的数据，即使数据以匿名方式发布。因此，我们希望向您说明何时会收集滑行输入数据，以及您可以如何控制。\n\n您可以在此屏幕右下角的链接部分找到详细介绍后台数据收集的视频。</string>
+</resources>

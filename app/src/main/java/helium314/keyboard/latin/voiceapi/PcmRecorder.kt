@@ -342,11 +342,13 @@ object Loudness {
 
     /**
      * Gain before sending (stage 5b): a quiet recording (peak below -20 dBFS) is raised to a peak of about -3 dBFS,
-     * by at most 30 dB; silence (below -70 dBFS) and normal recordings are left as they are.
+     * by at most [MAX_GAIN_DB]; silence (below -70 dBFS) and normal recordings are left as they are.
      */
+    /** stage 5g-24: 40 dB (was 30): the call mode of a car gave peaks of -42 … -50 dBFS, sent at -12 … -20 */
+    const val MAX_GAIN_DB = 40.0
     fun gainFor(peakDbfs: Double): Double = when {
         peakDbfs < SILENCE_DBFS || peakDbfs >= -20.0 -> 1.0
-        else -> min(10.0.pow((-3.0 - peakDbfs) / 20), 10.0.pow(30.0 / 20))
+        else -> min(10.0.pow((-3.0 - peakDbfs) / 20), 10.0.pow(MAX_GAIN_DB / 20))
     }
 
     fun other(source: Int) = if (source == SOURCE_MIC) SOURCE_VOICE_RECOGNITION else SOURCE_MIC
@@ -396,6 +398,9 @@ class AudioRecordSource(
     /** which effects are on: "ns", "agc", "ns+agc" or "" */
     var effectsOn = ""
         private set
+    /** stage 5g-24: how long the steps of [start] took */
+    var timing: String? = null
+        private set
     private var record: AudioRecord? = null
     override var failure: PcmSource.Failure? = null
         private set
@@ -406,13 +411,18 @@ class AudioRecordSource(
         val min = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         if (min <= 0) false
         else {
+            val t0 = android.os.SystemClock.elapsedRealtime()
             val r = AudioRecord(audioSource, sampleRate, AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, max(min, sampleRate)) // at least half a second of buffer
+            val t1 = android.os.SystemClock.elapsedRealtime()
             if (r.state != AudioRecord.STATE_INITIALIZED) { r.release(); false }
             else {
                 if (android.os.Build.VERSION.SDK_INT >= 23) preferredDevice?.let { r.preferredDevice = it }
                 if (effects) enableEffects(r.audioSessionId)
+                val t2 = android.os.SystemClock.elapsedRealtime()
                 r.startRecording()
+                // stage 5g-24: what takes long after an idle, for the journal
+                timing = "create ${t1 - t0}, effects ${t2 - t1}, start ${android.os.SystemClock.elapsedRealtime() - t2} ms"
                 if (r.recordingState != AudioRecord.RECORDSTATE_RECORDING) { r.release(); false } else { record = r; failure = null; true }
             }
         }
@@ -569,6 +579,8 @@ class PcmRecorder(
         fun onGap(deafMs: Long, connectMs: Long, phonePeakDbfs: Double) {}
         /** stage 5g-3: the phone's peak before the headset was asked for and after it was given back (dBFS, for the journal) */
         fun onPhoneLevels(beforeDbfs: Double, afterDbfs: Double) {}
+        /** stage 5g-24: the phone's peak in 100 ms windows of the first 800 ms (a dip when the route of a call moves) */
+        fun onEarlyLevels(dbfs: List<Int>) {}
         /** stage 5g-6: no speech, only noise (8 s of one phrase, or 20 s of a continuous dictation): stopped */
         fun onOnlyNoise() = onNoSpeech()
         /** stage 5g-6, for the journal at the end: share of speech frames (%), the noise level, phrases dropped as noise */
@@ -1119,6 +1131,9 @@ class PcmRecorder(
     private val headsetFrame = ShortArray(PcmBuffer.SAMPLE_RATE * SpeechEndDetector.FRAME_MS / 1000)
     private val phoneFrame = ShortArray(PcmBuffer.SAMPLE_RATE * SpeechEndDetector.FRAME_MS / 1000)
     private var firstFrame = true
+    private val earlyWindows = ArrayList<Int>()
+    private var windowPeak = 0
+    private var windowSamples = 0L
 
     /** the phone's level before and after the try, said once when the 0.8 s after it are measured */
     private fun measurePhone(framePeak: Int, n: Int) {
@@ -1195,6 +1210,14 @@ class PcmRecorder(
                 } else peak = max(peak, framePeak)
                 // stage 5g-21: the loudest of the first 2 s (the probe "mute the radio with a call": does the phone hear?)
                 if (ms(totalSamples) <= EARLY_MS) earlyPeak = max(earlyPeak, mainPeak)
+                // stage 5g-24: the first 800 ms by 100 ms windows, said once
+                if (earlyWindows.size < EARLY_WINDOWS) {
+                    windowPeak = max(windowPeak, mainPeak); windowSamples += n
+                    if (ms(windowSamples) >= EARLY_WINDOW_MS) {
+                        earlyWindows.add(Loudness.dbfs(windowPeak.toDouble()).toInt()); windowPeak = 0; windowSamples = 0
+                        if (earlyWindows.size == EARLY_WINDOWS) { val w = earlyWindows.toList(); deliver { onEarlyLevels(w) } }
+                    }
+                }
                 val level = SpeechEndDetector.level(SpeechEndDetector.rms(frame, n))
                 deliver { onLevel(level) }
                 if (firstFrame) { firstFrame = false; val at = clock(); deliver { onFirstFrame(at) } }
@@ -1365,6 +1388,8 @@ class PcmRecorder(
         const val PROBATION_LATE_GAP_DB = 10.0
         /** after the channel is given back the phone settles this long; a frame this loud in that time is a click */
         const val SETTLE_MS = 200L
+        private const val EARLY_WINDOWS = 8
+        private const val EARLY_WINDOW_MS = 100L
         private const val CLICK_PEAK = 32_000
         /** the phone's level before the try (0.5 s) and after it (0.8 s), for the journal */
         private const val BEFORE_FRAMES = 25

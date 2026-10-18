@@ -211,7 +211,7 @@ class OpenAiVoiceFlowTest {
         startWith { SyntheticSource(syllables(3.0), noise = 0.3, tone = amplitudeOf(-63.0), onRead = { ms -> if (ms >= 1000) controller.finish() }) }
         assertEquals(1, transcribeCalls)
         assertEquals(listOf("Привет, как дела?"), host.committed)
-        assertTrue(sentPeakDbfs > -34 && sentPeakDbfs < -32, "-63 dBFS raised by 30 dB at most: $sentPeakDbfs")
+        assertTrue(sentPeakDbfs > -24 && sentPeakDbfs < -22, "-63 dBFS raised by 40 dB at most (stage 5g-24): $sentPeakDbfs")
     }
 
     @Test fun manualStopOfSilenceSendsNothing() {

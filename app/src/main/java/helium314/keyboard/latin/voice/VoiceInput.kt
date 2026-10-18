@@ -42,6 +42,10 @@ import helium314.keyboard.latin.voiceapi.SilentMics
 import helium314.keyboard.latin.voiceapi.HeadsetWatcher
 import helium314.keyboard.latin.voiceapi.MicRouting
 import helium314.keyboard.latin.voiceapi.KnownCars
+import helium314.keyboard.latin.voiceapi.CarDetect
+import helium314.keyboard.latin.voiceapi.NotCars
+import helium314.keyboard.latin.voiceapi.AudioDevice
+import helium314.keyboard.latin.voiceapi.PreCapture
 import helium314.keyboard.latin.voiceapi.HeadsetMic
 import helium314.keyboard.latin.voiceapi.PcmSource
 import helium314.keyboard.latin.voiceapi.ChunkStore
@@ -165,6 +169,70 @@ class VoiceInput @JvmOverloads constructor(
         background = { cleanupWorker.execute(it) },
     )
 
+    // ---- stage 5g-24: the microphone opens at the touch of the key ----
+    private var pre: PreCapture? = null
+    private var preSourceType = -1
+    private var preAudio: AudioRecordSource? = null
+    private val preGiveUp = Runnable { discardPre("no tap") }
+
+    /**
+     * The touch of the microphone key (before its release, the tap): the phone's microphone opens now and keeps the sound
+     * in memory, for the OpenAI recording only, where it would start (permission, screen on, not a sensitive field, no
+     * dictation running). The tap or the long press takes the sound over; otherwise it is wiped.
+     */
+    fun onMicDown(editorInfo: EditorInfo?) {
+        if (pre != null || controller.isActive || interruption.isRunning || android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) return
+        if (SensitiveInput.isSensitive(editorInfo) || !Settings.getValues().mVoiceInputInternal || !hasPermission() || !screenIsOn()) return
+        if (!(VoiceApiPrefs.isAvailable() && engineChoice(editorInfo).openAi)) return
+        val prefs = ime.prefs()
+        preSourceType = VoiceApiPrefs.audioSource(prefs)
+        val a = AudioRecordSource(preSourceType, nonBlocking = true, effects = true)
+        preAudio = a
+        pre = PreCapture(a)
+        handler.postDelayed(preGiveUp, PreCapture.GIVE_UP_MS)
+    }
+
+    /** the touch was cancelled or slid away from the key */
+    fun onMicTouchCancelled() = discardPre("cancelled")
+
+    private fun discardPre(why: String) {
+        handler.removeCallbacks(preGiveUp)
+        val p = pre ?: return
+        pre = null; preAudio = null
+        Log.i(TAG, "microphone opened at the touch: given up ($why)")
+        p.discard()
+    }
+
+    /** the recording opens the phone: the sound of the touch if it is the same source, else a new one */
+    private fun takePre(source: Int, plain: Boolean): PcmSource? {
+        handler.removeCallbacks(preGiveUp)
+        val p = pre ?: return null
+        val audio = preAudio
+        pre = null; preAudio = null
+        if (source != preSourceType || !plain || audio == null) { p.discard(); return null }
+        val primed = p.adopt() ?: return null
+        val a = attempt
+        if (a != null) {
+            val tapAfter = a.at - p.touchedAt
+            a.startInfo = "touch ${tapAfter} ms before the tap, ${primed.primedMs} ms of sound from it; microphone opened in ${p.openMs} ms (" +
+                (audio.timing ?: "?") + "), first sound ${if (p.firstFrameAt > 0) p.firstFrameAt - p.touchedAt else -1} ms after the touch; " + coldInfo()
+            preFirstFrameAt = p.firstFrameAt
+        }
+        lastPhoneSource = audio
+        return primed
+    }
+
+    /** stage 5g-24: the first sound of a recording that began at the touch (wall clock), 0: none */
+    private var preFirstFrameAt = 0L
+
+    /** the process and Silero at the tap (after an idle the process may be new, Silero not loaded) */
+    private fun coldInfo(): String {
+        val age = if (android.os.Build.VERSION.SDK_INT >= 24) (android.os.SystemClock.uptimeMillis() - android.os.Process.getStartUptimeMillis()) / 1000 else -1
+        val idle = if (lastDictationEnd > 0) (System.currentTimeMillis() - lastDictationEnd) / 1000 else -1
+        return "process ${age} s old, idle ${if (idle >= 0) "$idle s" else "first since start"}, ${SileroVad.state()}"
+    }
+    private var lastDictationEnd = 0L
+
     /** Microphone key. Returns false if the old behaviour (switch to another keyboard with voice) should be used. */
     fun onMicKey(editorInfo: EditorInfo?): Boolean {
         lastField = fieldKey(editorInfo)
@@ -192,6 +260,7 @@ class VoiceInput @JvmOverloads constructor(
                 // stage 5g-20: a player is paused at the tap, before the recording starts (YouTube came into the recording)
                 if (hasPermission() && screenIsOn()) takeFocus(a)
                 controller.onMicPressed()
+                discardPre("not used") // stage 5g-24: the recording took the sound of the touch, or it is not needed
                 if (controller.state != VoiceState.LISTENING && controller.state != VoiceState.PROCESSING) focus.release()
                 // nothing started: the permission dialog, or the screen is off; the journal says which
                 when (controller.state) {
@@ -226,6 +295,9 @@ class VoiceInput @JvmOverloads constructor(
         val gold = AiTint.micGold(sensitive, Settings.getValues().mVoiceInputInternal, hasPermission(),
             !sensitive && VoiceApiPrefs.isAvailable() && engineChoice(editorInfo).openAi)
         ime.setMicState(gold)
+        // stage 5g-24: the first tap after an idle as fast as the next ones: the speech detector is loaded when the keyboard
+        // shows a field where the OpenAI voice records (in the background, nothing is recorded)
+        if (gold) SileroVad.preload(ime)
     }
 
     private fun fieldKey(info: EditorInfo?) = PermissionAutoStart.fieldKey(info?.packageName, info?.fieldId ?: 0)
@@ -426,10 +498,24 @@ class VoiceInput @JvmOverloads constructor(
         val snap = AndroidHeadsetMic.snapshot(am) // only reads lists, changes nothing
         val marks = SilentMics.get(ime)
         val prefs = ime.prefs()
+        // stage 5g-25: a car only by its Bluetooth class (or, while the class is unknown, by a proof and the name):
+        // watches and the car alarm have a call input and no media, too
+        val btInfos = HashMap<String, CarDetect.Info>()
+        fun infoOf(d: AudioDevice) = btInfos.getOrPut(MicRouting.key(d)) { CarDetect.info(ime, d.tail, snap.inputInfo(d)?.productName) }
+        fun kindOf(d: AudioDevice) = infoOf(d).let { CarDetect.kind(it.major, it.deviceClass) }
         val routing = MicRouting.decide(choice, snap.inputs, snap.outputs, snap.media, snap.communication,
-            notHeadset = { marks.has(MicRouting.key(it)) }, knownCar = { KnownCars.has(prefs, MicRouting.key(it)) })
+            notHeadset = { marks.has(MicRouting.key(it)) },
+            knownCar = { KnownCars.has(prefs, MicRouting.key(it)) || kindOf(it) == CarDetect.Kind.CAR },
+            mayBeCar = { d -> CarDetect.mayBeCar(kindOf(d), infoOf(d).name, KnownCars.has(prefs, MicRouting.key(d)), NotCars.has(prefs, MicRouting.key(d))) })
         micMissing = routing.decision.missing
-        attempt?.let { it.btDevices = routing.devices; it.micReason = routing.reason }
+        val callInputs = snap.inputs.filter { AndroidHeadsetMic.isHeadsetWithMicrophone(it.type) }
+        val classes = callInputs.joinToString("; ") { d ->
+            "${d.tail?.takeLast(2) ?: "??"} = ${CarDetect.describe(infoOf(d))}" + (if (NotCars.has(prefs, MicRouting.key(d))) ", marked not a car" else "")
+        }
+        attempt?.let { it.btDevices = routing.devices + (if (classes.isNotEmpty()) " [$classes]" else ""); it.micReason = routing.reason }
+        NotCars.rememberLast(prefs, callInputs.map { MicRouting.key(it) })
+        askBluetoothClass = callInputs.any { kindOf(it) == CarDetect.Kind.UNKNOWN } &&
+            CarDetect.shouldAsk(prefs, true, CarDetect.permitted(ime)) && CarDetect.declared(ime)
         Log.i(TAG, "microphone: ${routing.reason}; bluetooth: ${routing.devices}") // types and 2 characters of the address only
         if (routing.decision.skipped) attempt?.mic = "phone, marked device skipped"
         headsetProven = routing.reason == "headset proven"
@@ -444,7 +530,6 @@ class VoiceInput @JvmOverloads constructor(
         // stage 5g-22: the car there is, marked "without sound" or not: a mark never stops the mute call or the warm link
         val carDevice = routing.carDevice
         val carKey = carDevice?.let { MicRouting.key(it) }
-        if (carKey != null) KnownCars.add(prefs, carKey)
         carPlan = MicRouting.carPlan(carDevice != null, continuous)
         // stage 5g-21: the car's link is warm (a phrase a moment ago): the car records at once, the probation as in 5g-20;
         // stage 5g-22: only if the link is really up (it went down when the car connected its media in 4401)
@@ -482,6 +567,9 @@ class VoiceInput @JvmOverloads constructor(
         return AndroidHeadsetMic(ime, info, modeAfterLink = headsetCar && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
             .also { carMic = it.takeIf { m -> m.modeAfterLink } }
     }
+
+    /** stage 5g-25: the class of a Bluetooth device with a call input was unknown: the permission is asked after this dictation */
+    private var askBluetoothClass = false
 
     /** stage 5g-14: the car-like device of this recording, for the journal (when its link came up) */
     private var carMic: AndroidHeadsetMic? = null
@@ -527,7 +615,9 @@ class VoiceInput @JvmOverloads constructor(
     private fun phoneSources(headsetTried: Boolean): (Int) -> PcmSource {
         val builtIn = if (headsetTried && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) AndroidHeadsetMic.builtInMic(ime) else null
         // stage 5g-6: the noise suppressor and the gain control of the phone, where it has them
-        return { src -> AudioRecordSource(src, preferredDevice = builtIn, nonBlocking = true, effects = true).also { s -> lastPhoneSource = s } }
+        // stage 5g-24: the first source of a recording is the one opened at the touch, if there is one
+        return { src -> (if (!headsetTried) takePre(src, builtIn == null) else null.also { discardPre("headset tried") })
+            ?: AudioRecordSource(src, preferredDevice = builtIn, nonBlocking = true, effects = true).also { s -> lastPhoneSource = s } }
     }
 
     /**
@@ -778,7 +868,11 @@ class VoiceInput @JvmOverloads constructor(
                 if (trace.up && headsetCar) handler.post { panel?.tickReady() }
             }
             VoiceTrace.HeadsetRejected -> if (MicRouting.strikeAllowed(headsetProven, onWarm)) strike()
-            VoiceTrace.HeadsetHeard -> SilentMics.get(ime).unmark(headsetKey)
+            VoiceTrace.HeadsetHeard -> {
+                SilentMics.get(ime).unmark(headsetKey)
+                // stage 5g-25: the proof of a car: its microphone heard the speaker
+                if (headsetCar) KnownCars.add(ime.prefs(), headsetKey)
+            }
             // stage 5g-20: the car is asked for in a pause: the dimmed badge "connecting the car"
             VoiceTrace.HeadsetAsked -> { micConnecting = true; panel?.setBluetoothConnecting(true, headsetCar); endMuteCall() }
             else -> Unit
@@ -788,11 +882,16 @@ class VoiceInput @JvmOverloads constructor(
             is VoiceTrace.RecordingStarted -> {
                 a.started = true; a.source = trace.source
                 lastPhoneSource?.let { a.effects = it.effectsOn }
+                // stage 5g-24: a recording that began at the tap (not at the touch): its steps too
+                if (a.startInfo == null) a.startInfo = "at the tap; microphone (${lastPhoneSource?.timing ?: "?"}); " + coldInfo()
                 if (a.mic?.startsWith("phone, not a headset") != true) trace.mic?.let { a.mic = it }
             }
+            is VoiceTrace.EarlyLevels -> a.earlyLevels = trace.dbfs.joinToString(" ")
             is VoiceTrace.Noise -> { a.speechPercent = trace.speechPercent; a.noiseDb = trace.noiseDbfs.toInt(); a.noisePhrases = trace.droppedPhrases }
             is VoiceTrace.FirstFrame -> {
-                a.firstFrameMs = (trace.atMs - a.at).coerceAtLeast(0)
+                // stage 5g-24: a recording begun at the touch had its first sound before the tap (then 0)
+                a.firstFrameMs = ((if (preFirstFrameAt > 0) preFirstFrameAt else trace.atMs) - a.at).coerceAtLeast(0)
+                preFirstFrameAt = 0
                 if (mutePending) { mutePending = false; startMuteCall() } // stage 5g-22: the phone records first, then the call
             }
             is VoiceTrace.HeadsetTried -> a.headsetMs = trace.ms
@@ -836,7 +935,25 @@ class VoiceInput @JvmOverloads constructor(
         val a = attempt ?: return
         attempt = null
         journal.add(a)
+        lastDictationEnd = System.currentTimeMillis()
+        if (askBluetoothClass) {
+            askBluetoothClass = false
+            CarDetect.markAsked(ime.prefs())
+            // stage 5g-25: once, after the dictation: "Nearby devices" tells the car radio from a watch or the car alarm
+            handler.postDelayed({
+                if (controller.state == VoiceState.LISTENING || controller.state == VoiceState.PROCESSING) return@postDelayed
+                Toast.makeText(ime, R.string.voice_bt_class_why, Toast.LENGTH_LONG).show()
+                try {
+                    ime.startActivity(Intent(ime, VoicePermissionActivity::class.java)
+                        .putExtra(VoicePermissionActivity.EXTRA_PERMISSION, android.Manifest.permission.BLUETOOTH_CONNECT)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK))
+                } catch (e: Exception) {
+                    Log.w(TAG, "can't show permission dialog")
+                }
+            }, 800)
+        }
     }
+
 
     private fun notStarted(reason: String) {
         attempt?.let { it.notStarted = it.notStarted ?: reason }
@@ -1193,7 +1310,9 @@ class VoiceInput @JvmOverloads constructor(
     }
 
     /** stage 5g-20: a paused player may still sound for a moment: muted unless it is speech */
-    private fun muteStartMs() = if (focus.held) PcmRecorder.MUTE_START_MS else 0L
+    /** stage 5g-24: with the sound of the touch, the player played until the tap: that time is covered too */
+    private fun muteStartMs() = if (!focus.held) 0L
+        else PcmRecorder.MUTE_START_MS + (pre?.let { (System.currentTimeMillis() - it.touchedAt).coerceIn(0, PreCapture.MAX_MS) } ?: 0L)
 
     private fun currentLocale(): Locale = RichInputMethodManager.getInstance().currentSubtype.locale
 

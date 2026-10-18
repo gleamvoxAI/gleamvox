@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-de/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="android_spell_checker_settings">Gleamvox-Rechtschreibprüfungs-Einstellungen</string>
+    <string name="ime_settings">Gleamvox-Einstellungen</string>
+    <string name="spell_checker_service_name">Gleamvox-Rechtschreibprüfung</string>
+    <string name="gesture_data_background_gathering_info_message">Das Einschalten der Hintergrund-Datenerfassung erlaubt Gleamvox, Gesten aufzuzeichnen, die du in anderen Apps eingibst. Das ist sehr nützlich für das Gesteneingabe-Projekt, da so eine beträchtliche Datenmenge entstehen kann, wenn auch mit geringerer Qualität als bei der aktiven Erfassung. Die Hintergrund-Datenerfassung ist kein Ersatz für aktiv erfasste Daten, sondern als Ergänzung gedacht, da Datenqualität wichtiger ist als -quantität.\n\n Die Hintergrund-Erfassung birgt ein hohes Potenzial, Daten zu sammeln, die du möglicherweise für zu privat hältst, um sie zu teilen, selbst wenn sie anonym veröffentlicht werden. Deshalb möchten wir klarstellen, wann Gestendaten erfasst werden und wie du das beeinflussen kannst.\n\n Ein Video mit weiteren Erklärungen zur Hintergrund-Datenerfassung findest du im Link-Bereich unten rechts auf diesem Bildschirm.</string>
+</resources>

@@ -1178,7 +1178,7 @@ New dictionary:
     <!-- Info dialog main message (other sections in different strings)
      string will probably be removed once data gathering is finished (end of 2026 latest) -->
     <string name="gesture_data_background_gathering_info_message">
-        Turning on background data collection allows Heliboard to record gestures you type in other apps.
+        Turning on background data collection allows AI Keyboard to record gestures you type in other apps.
         This is very useful for the gesture typing project as it can produce a considerable amount of data, albeit at lower quality than active gathering.
         Background data collection is not a replacement for actively gathered data, it is meant to be an addition, as data quality is more important than quantity.\n\n
         Background gathering has high potential of collecting data that you may consider too private to share, even when published anonymously.
@@ -1697,6 +1697,9 @@ New dictionary:
     <string name="voice_mic_choice_summary">With a Bluetooth headset with a microphone you can speak into the headset. Music pauses while you speak and goes on afterwards. If the headset does not answer, the phone records. The Bluetooth badge on the panel: dimmed means connecting, bright means the headset or the car hears you. No extra permission is needed.</string>
     <string name="voice_mic_check_headset">Headset: also 2.5 s with the microphone of the connected headset.</string>
     <string name="voice_diag_forget_mics">Forget devices without sound (%d)</string>
+    <string name="voice_bt_class_why">To tell the car radio from a watch or a car alarm, Gleamvox needs “Nearby devices”. Nothing is searched for or sent.</string>
+    <string name="voice_diag_not_a_car">This is not a car (the Bluetooth devices of the last dictation)</string>
+    <string name="voice_diag_forget_not_cars">Forget “not a car” marks (%d)</string>
     <!-- stage 5g-4 -->
     <string name="voice_journal_link">Journal</string>
     <string name="voice_diag_hint">Tap "Copy the journal" and paste the text into a message to the developer.</string>

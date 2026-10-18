@@ -27,6 +27,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- stage 5g-25: "Nearby devices" (Android 12+, asked once after a dictation with a Bluetooth device that has only a
+         call input): the Bluetooth class of the device tells the car radio from a watch or a car alarm (CarDetect).
+         Only the class and the name of bonded devices are read; nothing is searched for, nothing is connected. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <application>
         <service android:name="helium314.keyboard.latin.ailm.AiDictDownloadService"
             android:exported="false" android:foregroundServiceType="dataSync" />

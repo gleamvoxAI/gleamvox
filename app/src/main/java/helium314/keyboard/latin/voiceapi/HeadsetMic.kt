@@ -156,6 +156,8 @@ object MicRouting {
                communication: List<AudioDevice>?,
                /** stage 5g-22: a device known as a car stays a car when it plays media too (F0 got a media profile) */
                knownCar: (AudioDevice) -> Boolean = { false },
+               /** stage 5g-25: the device may be a car ([CarDetect.mayBeCar]): watches and alarm modules are not */
+               mayBeCar: (AudioDevice) -> Boolean = { true },
                notHeadset: (AudioDevice) -> Boolean): Result {
         val proven = provenHeadset(inputs, outputs, media)?.takeIf { !knownCar(it) }
         val anyCallInput = inputs.firstOrNull { i ->
@@ -167,7 +169,9 @@ object MicRouting {
         val callInputs = inputs.filter { i ->
             AndroidHeadsetMic.isHeadsetWithMicrophone(i.type) && (communication == null || communication.any { it.type == i.type })
         }
-        val carLike = if (proven == null) callInputs.firstOrNull { !notHeadset(it) } ?: callInputs.firstOrNull() else null
+        // stage 5g-25: only devices that may be a car; a watch or the car alarm never starts the car's way
+        val cars = callInputs.filter(mayBeCar)
+        val carLike = if (proven == null) cars.firstOrNull { !notHeadset(it) } ?: cars.firstOrNull() else null
         val candidate = when (choice) {
             MicChoice.AUTO -> proven ?: carLike
             MicChoice.HEADSET -> proven ?: anyCallInput
@@ -179,6 +183,8 @@ object MicRouting {
         val reason = when {
             choice == MicChoice.PHONE -> "phone chosen"
             !btInput -> "no bluetooth input"
+            candidate == null && choice == MicChoice.AUTO && proven == null && callInputs.isNotEmpty() && cars.isEmpty() ->
+                "bluetooth calls only, no car (watch, alarm or similar)"
             candidate == null -> if (media == null) "bluetooth input, media route unknown" else "bluetooth input, not usable for calls"
             decision.skipped -> "device without sound (marked)"
             proven == null && choice == MicChoice.AUTO -> "car-like (${NAMES[candidate.type] ?: candidate.type}, no media) tried"
@@ -187,7 +193,7 @@ object MicRouting {
         }
         return Result(decision, reason, describe(inputs, outputs, media), candidate?.takeIf { decision.headset },
             carLike = proven == null && decision.headset,
-            carDevice = if (proven == null && choice != MicChoice.PHONE) callInputs.firstOrNull() else null)
+            carDevice = if (proven == null && choice != MicChoice.PHONE) cars.firstOrNull() else null)
     }
 
     private val NAMES = mapOf(
@@ -239,15 +245,23 @@ class HeadsetWatcher(private val onNewHeadset: () -> Unit, private val onHeadset
 }
 
 /**
- * Stage 5g-22: devices once used as a car (a call input, no media): they stay cars when they get a media profile too (F0
- * in 4401: "in sco, out sco, media" and it was taken for earbuds). Only the type and the end of the address, in the prefs.
+ * Stage 5g-22: devices known as a car stay cars when they get a media profile too (F0 in 4401: "in sco, out sco, media"
+ * and it was taken for earbuds). Stage 5g-25: "known" needs a proof now — the car's microphone heard the speaker (before,
+ * every device with a call input was added at the tap, the car alarm of the owner too; that list is not used any more).
+ * Only the type and the end of the address, in the prefs.
  */
 object KnownCars {
-    const val PREF = "aikb_known_cars"
+    const val PREF = "aikb_known_cars_heard"
+    /** the list of 5g-22 (filled without a proof): removed at the first use */
+    private const val OLD_PREF = "aikb_known_cars"
     fun has(prefs: SharedPreferences, key: String?) = key != null && key in prefs.getStringSet(PREF, emptySet()).orEmpty()
     fun add(prefs: SharedPreferences, key: String?) {
         if (key == null || has(prefs, key)) return
-        prefs.edit { putStringSet(PREF, prefs.getStringSet(PREF, emptySet()).orEmpty() + key) }
+        prefs.edit { putStringSet(PREF, prefs.getStringSet(PREF, emptySet()).orEmpty() + key); remove(OLD_PREF) }
+    }
+    fun remove(prefs: SharedPreferences, key: String?) {
+        if (key == null || !has(prefs, key)) return
+        prefs.edit { putStringSet(PREF, prefs.getStringSet(PREF, emptySet()).orEmpty() - key) }
     }
 }
 

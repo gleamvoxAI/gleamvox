@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-pl/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Sprawdzanie pisowni Gleamvox</string>
+    <string name="android_spell_checker_settings">Ustawienia sprawdzania pisowni Gleamvox</string>
+    <string name="ime_settings">Ustawienia Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">Włączenie gromadzenia danych w tle umożliwia Gleamvox rejestrowanie gestów wykonywanych w innych aplikacjach. Jest to bardzo przydatne w projekcie pisania gestami, ponieważ może wygenerować dużą ilość danych, choć o niższej jakości niż aktywne gromadzenie. Gromadzenie danych w tle nie zastępuje aktywnie gromadzonych danych, a ma być ich uzupełnieniem, ponieważ jakość danych jest ważniejsza niż ich ilość.\n\n Gromadzenie danych w tle wiąże się z dużym ryzykiem zebrania danych, które mogą być uważane za zbyt prywatne, by je udostępniać, nawet jeśli są publikowane anonimowo. Z tego powodu chcemy wyjaśnić, kiedy gromadzone są dane gestów i jaki możesz mieć na to wpływ.\n\n W sekcji linków w prawym dolnym rogu tego ekranu znajdziesz film wyjaśniający dokładniej sposób gromadzenia danych w tle.</string>
+</resources>

@@ -1239,6 +1239,17 @@ public class LatinIME extends InputMethodService implements
         mAiAssist.onAiLongPress();
     }
 
+    /** stage 5g-24: the microphone opens at the touch of its key (the sound is kept in memory until the tap) */
+    @Override
+    public void onMicDown() {
+        if (mVoiceInput != null) mVoiceInput.onMicDown(getCurrentInputEditorInfo());
+    }
+
+    @Override
+    public void onMicTouchCancelled() {
+        if (mVoiceInput != null) mVoiceInput.onMicTouchCancelled();
+    }
+
     /** long press on the round microphone: a continuous dictation, once (stage 5g); false: nothing happened */
     @Override
     public boolean onMicLongPress() {

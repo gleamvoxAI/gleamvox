@@ -35,6 +35,10 @@ public final class InputAttributes {
     final public boolean mIsPasswordField;
     final public boolean mShouldShowSuggestions;
     final public boolean mMayOverrideShowingSuggestions;
+    /** ux-5: the field asks for no suggestions (the flag of an ordinary text field, e.g. a search bar), we show them anyway,
+     *  but without auto-correction: only a tap on a suggestion changes the word. Never in password, e-mail, address, number,
+     *  "do not remember" and web fields. */
+    final public boolean mSuggestionsByTapOnly;
     final public boolean mApplicationSpecifiedCompletionOn;
     final public boolean mShouldInsertSpacesAutomatically;
     final public boolean mShouldShowVoiceInputKey;
@@ -82,6 +86,7 @@ public final class InputAttributes {
                         + " imeOptions=0x%08x", mInputType, editorInfo.imeOptions));
             }
             mShouldShowSuggestions = false;
+            mSuggestionsByTapOnly = false;
             mMayOverrideShowingSuggestions = false;
             mInputTypeShouldAutoCorrect = false;
             mApplicationSpecifiedCompletionOn = false;
@@ -102,7 +107,9 @@ public final class InputAttributes {
 
         // TODO: Have a helper method in InputTypeUtils
         // Make sure that passwords are not displayed in {@link SuggestionStripView}.
-        mShouldShowSuggestions = !mIsPasswordField && !flagNoSuggestions;
+        // ux-5: a field with the "no suggestions" flag still gets the strip (tap only), unless it is a field with private or special text
+        mSuggestionsByTapOnly = flagNoSuggestions && allowsTapOnlySuggestions(mInputType, mIsPasswordField, mIsSensitiveField, editorInfo);
+        mShouldShowSuggestions = !mIsPasswordField && (!flagNoSuggestions || mSuggestionsByTapOnly);
         mMayOverrideShowingSuggestions = !mIsPasswordField;
 
         mShouldInsertSpacesAutomatically = InputTypeUtils.isAutoSpaceFriendlyType(mInputType);
@@ -146,6 +153,23 @@ public final class InputAttributes {
             mNoLearning = (editorInfo.imeOptions & EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0;
         else
             mNoLearning = false;
+    }
+
+    /** ux-5: ordinary text (search bar, chat, notes) only: not password, e-mail, address, phonetic, web field (the page changes the composing text),
+     *  "do not remember" (incognito) or any non-text field. */
+    public static boolean allowsTapOnlySuggestions(final int inputType, final boolean isPassword, final boolean isSensitive,
+            final EditorInfo editorInfo) {
+        if (isPassword || isSensitive) return false;
+        if ((inputType & InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT) return false;
+        if (editorInfo != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && (editorInfo.imeOptions & EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0) return false;
+        final int variation = inputType & InputType.TYPE_MASK_VARIATION;
+        return variation == InputType.TYPE_TEXT_VARIATION_NORMAL
+                || variation == InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE
+                || variation == InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE
+                || variation == InputType.TYPE_TEXT_VARIATION_FILTER
+                || variation == InputType.TYPE_TEXT_VARIATION_PERSON_NAME
+                || variation == InputType.TYPE_TEXT_VARIATION_EMAIL_SUBJECT;
     }
 
     public boolean isTypeNull() {

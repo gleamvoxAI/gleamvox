@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-cs/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Kontrola pravopisu Gleamvox</string>
+    <string name="android_spell_checker_settings">Nastavení kontroly pravopisu Gleamvox</string>
+    <string name="ime_settings">Nastavení Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">Zapnutím sběru dat na pozadí umožníte aplikaci Gleamvox zaznamenávat gesta, která zadáváte v jiných aplikacích. To je velmi užitečné pro projekt psaní pomocí gest, protože tak lze získat značné množství dat, i když v nižší kvalitě než při aktivním sběru. Sběr dat na pozadí nenahrazuje aktivně shromážděná data, ale má je doplňovat, protože kvalita dat je důležitější než jejich množství.\n\n Sběr na pozadí s sebou nese vysoké riziko shromáždění dat, která můžete považovat za příliš soukromá na to, abyste je sdíleli, a to i v případě, že jsou zveřejněna anonymně. Z tohoto důvodu chceme objasnit, kdy se data o gestech shromažďují a jak to můžete ovlivnit.\n\n Video s podrobnějšími informacemi o sběru dat na pozadí najdete v sekci odkazů v pravém dolním rohu této obrazovky.</string>
+</resources>

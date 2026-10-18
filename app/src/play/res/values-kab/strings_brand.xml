@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-kab/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ime_settings">Iɣewwaren n Gleamvox</string>
+</resources>

@@ -10,7 +10,7 @@ object Links {
     /** site-1: the source code of Gleamvox (GPL-3.0) and the site with the privacy policy */
     const val GLEAMVOX_SOURCE = "https://github.com/gleamvoxAI/gleamvox"
     const val GLEAMVOX_SITE = "https://gleamvox.com"
-    const val LICENSE = "$GITHUB/blob/main/LICENSE"
+    const val LICENSE = "$GLEAMVOX_SOURCE/blob/main/LICENSE"
     const val WIKI_URL = "$GITHUB/wiki"
     const val LAYOUT_WIKI_URL = "$WIKI_URL/2.-Layouts"
     const val CUSTOM_LAYOUTS = "$GITHUB/discussions/categories/custom-layout"

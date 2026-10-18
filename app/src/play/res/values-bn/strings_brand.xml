@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-bn/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Gleamvox বানান পরীক্ষক</string>
+    <string name="ime_settings">Gleamvox সেটিংস</string>
+    <string name="android_spell_checker_settings">Gleamvox বানান পরীক্ষক সেটিংস</string>
+    <string name="gesture_data_background_gathering_info_message">নেপথ্য তথ্য সংগ্রহ চালু করলে Gleamvox অন্যান্য অ্যাপে আপনার টাইপ করা অঙ্গুলিহেলন রেকর্ড করতে পারবে। অঙ্গুলিহেলন টাইপিং প্রকল্পের জন্য এটি অত্যন্ত উপকারী কারণ এটি প্রচুর পরিমাণে তথ্য সংগ্রহ করতে পারে, যদিও সক্রিয় সংগ্রহের তুলনায় মানের দিক থেকে কিছুটা কম। নেপথ্য তথ্য সংগ্রহ সক্রিয়ভাবে সংগৃহীত তথ্যের বিকল্প নয়, এটি একটি সংযোজন হিসেবে উদ্দেশ্যিত, কারণ পরিমাণের চেয়ে তথ্যের মান বেশি গুরুত্বপূর্ণ।\n\n নেপথ্য সংগ্রহে এমন তথ্য সংগ্রহের উচ্চ সম্ভাবনা রয়েছে যা আপনি হয়তো বেনামে প্রকাশিত হলেও শেয়ার করার জন্য অনেক বেশি ব্যক্তিগত মনে করতে পারেন। এই কারণে আমরা স্পষ্ট করতে চাই কখন অঙ্গুলিহেলন তথ্য সংগ্রহ করা হচ্ছে এবং আপনি কীভাবে তা নিয়ন্ত্রণ করতে পারেন।\n\n নেপথ্য তথ্য সংগ্রহ সম্পর্কে আরও ব্যাখ্যাকারী একটি ভিডিও এই স্ক্রিনের নিচে ডানে লিঙ্ক বিভাগে পাওয়া যাবে।</string>
+</resources>

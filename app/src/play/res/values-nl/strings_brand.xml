@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-nl/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Gleamvox-spellingcontrole</string>
+    <string name="android_spell_checker_settings">Gleamvox-spellingcontrole-instellingen</string>
+    <string name="ime_settings">Gleamvox-instellingen</string>
+    <string name="gesture_data_background_gathering_info_message">Door het verzamelen van achtergrondgegevens in te schakelen, kan Gleamvox gebaren opnemen die u in andere apps typt. Dit is erg handig voor het gebaartyperingsproject, omdat het een aanzienlijke hoeveelheid gegevens kan opleveren, zij het van lagere kwaliteit dan actief verzamelen. Het verzamelen van achtergrondgegevens is geen vervanging voor actief verzamelde gegevens; het is bedoeld als aanvulling, aangezien gegevenskwaliteit belangrijker is dan kwantiteit.\n\n Gegevensverzameling in de achtergrond heeft een groot potentieel voor het verzamelen van gegevens die u mogelijk als te privé beschouwt om te delen, zelfs als ze anoniem worden gepubliceerd. Om deze reden willen we duidelijk maken wanneer gebarengegevens worden verzameld en hoe u dit kunt beïnvloeden.\n\n U kunt een video vinden waarin meer wordt uitgelegd over het verzamelen van achtergrondgegevens in de linksectie rechtsonder op dit scherm.</string>
+</resources>

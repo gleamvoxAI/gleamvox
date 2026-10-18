@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-ca/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Corrector ortogràfic de l\'Gleamvox</string>
+    <string name="android_spell_checker_settings">Configuració del corrector ortogràfic de l\'Gleamvox</string>
+    <string name="ime_settings">Configuració de l\'Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">Activar la recopilació de dades en segon pla permet que l\'Gleamvox enregistri els gestos que escriviu en altres aplicacions. Això és molt útil per al projecte d\'escriptura gestual, ja que pot produir una quantitat considerable de dades, tot i que de menys qualitat que la recopilació activa. La recopilació en segon pla no substitueix les dades recopilades activament; està pensada com a complement, ja que la qualitat de les dades és més important que la quantitat.\n\n La recopilació en segon pla té un alt potencial de recollir dades que podríeu considerar massa privades per compartir-les, fins i tot si es publiquen de manera anònima. Per aquest motiu volem aclarir quan es recopilen dades gestuals i com hi podeu influir.\n\n Trobareu un vídeo que explica més coses sobre la recopilació de dades en segon pla a la secció d\'enllaços, a la part inferior dreta d\'aquesta pantalla.</string>
+</resources>

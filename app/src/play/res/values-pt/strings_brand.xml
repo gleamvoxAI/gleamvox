@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-pt/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Verificação ortográfica Gleamvox</string>
+    <string name="android_spell_checker_settings">Definições de verificação ortográfica Gleamvox</string>
+    <string name="ime_settings">Definições Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">Ativar a recolha de dados em segundo plano permite ao Gleamvox registar os gestos que escreve noutras apps. Isto é muito útil para o projeto de escrita por gestos, pois pode produzir uma quantidade considerável de dados, embora com menor qualidade do que a recolha ativa. A recolha de dados em segundo plano não substitui os dados recolhidos ativamente; destina-se a ser um complemento, pois a qualidade dos dados é mais importante do que a quantidade.\n\n A recolha em segundo plano tem grande potencial de recolher dados que pode considerar demasiado privados para partilhar, mesmo quando publicados anonimamente. Por esta razão, queremos clarificar quando os dados de gestos estão a ser recolhidos e como pode influenciá-lo.\n\n Pode encontrar um vídeo que explica mais sobre a recolha de dados em segundo plano na secção de links, no canto inferior direito deste ecrã.</string>
+</resources>

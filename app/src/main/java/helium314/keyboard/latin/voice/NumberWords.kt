@@ -23,9 +23,15 @@ object NumberWords {
 
     fun convert(text: String): Result {
         if (text.isBlank()) return Result(text, 0)
-        val p = Parser(text)
-        return p.run()
+        // stage 5g-24: counting "раз, два, три" — "раз" at the start of a sentence is 1 when "два" (or 2) follows it, and
+        // not "два раза"; elsewhere ("один раз, два раза", "раз уж") it is a word
+        var counted = 0
+        val t = COUNT_RAZ.replace(text) { m -> counted++; m.groupValues[1] + "1" }
+        val r = Parser(t).run()
+        return if (counted == 0) r else Result(r.text, r.converted + counted)
     }
+
+    private val COUNT_RAZ = Regex("(?iu)(^\\s*|[.!?:;—]\\s*)раз(?=[\\s,.;:–—-]+(?:два|2)(?![\\p{L}\\d])(?!\\s+раза))")
 
     // ---------------------------------------------------------------- tables
 

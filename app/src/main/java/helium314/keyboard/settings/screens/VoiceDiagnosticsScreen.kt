@@ -85,6 +85,18 @@ fun VoiceDiagnostics() {
             if (silentMics > 0) WideButton(stringResource(R.string.voice_diag_forget_mics, silentMics), onClick = {
                 helium314.keyboard.latin.voiceapi.SilentMics.get(ctx).clear(); silentMics = 0
             })
+            // stage 5g-25: the fallback when a watch or the car alarm was still taken for the car (normally the class decides)
+            val prefs = remember { ctx.prefs() }
+            var lastNotMarked by remember { mutableStateOf(helium314.keyboard.latin.voiceapi.NotCars.last(prefs).count { !helium314.keyboard.latin.voiceapi.NotCars.has(prefs, it) }) }
+            var notCars by remember { mutableStateOf(helium314.keyboard.latin.voiceapi.NotCars.all(prefs).size) }
+            if (lastNotMarked > 0) WideButton(stringResource(R.string.voice_diag_not_a_car), onClick = {
+                helium314.keyboard.latin.voiceapi.NotCars.markLast(prefs); lastNotMarked = 0
+                notCars = helium314.keyboard.latin.voiceapi.NotCars.all(prefs).size
+            })
+            if (notCars > 0) WideButton(stringResource(R.string.voice_diag_forget_not_cars, notCars), onClick = {
+                helium314.keyboard.latin.voiceapi.NotCars.clear(prefs); notCars = 0
+                lastNotMarked = helium314.keyboard.latin.voiceapi.NotCars.last(prefs).size
+            })
         }
         if (confirmClear) androidx.compose.material3.AlertDialog(
             onDismissRequest = { confirmClear = false },

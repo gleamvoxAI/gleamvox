@@ -92,7 +92,7 @@
     <string name="user_dict_settings_edit_dialog_title">Редагувати слово</string>
     <string name="user_dict_settings_all_languages">Для всіх мов</string>
     <string name="user_dict_settings_more_languages">"Інші мови…"</string>
-    <string name="ime_settings">Налаштування HeliBoard</string>
+    <string name="ime_settings">Налаштування AI Keyboard</string>
     <string name="day_night_mode_summary">Вигляд наслідує системні налаштування</string>
     <string name="autospace_after_punctuation_summary">Автоматично вставляти пробіл після знаків пунктуації під час введення нового слова</string>
     <string name="theme_style">Стиль теми</string>
@@ -103,7 +103,7 @@
     <string name="settings_category_input">Введення</string>
     <string name="subtype_akkhor_bn_BD">%s (Аккгор)</string>
     <string name="autospace_after_punctuation">Автопробіл після знаків пунктуації</string>
-    <string name="android_spell_checker_settings">Налаштування перевірки правопису HeliBoard</string>
+    <string name="android_spell_checker_settings">Налаштування перевірки правопису AI Keyboard</string>
     <string name="settings_category_correction">Виправлення</string>
     <string name="settings_category_suggestions">Пропозиції</string>
     <string name="settings_category_experimental">Експериментальне</string>
@@ -146,7 +146,7 @@
     <string name="show_hints">Показувати підказки клавіш</string>
     <string name="prefs_long_press_keyboard_to_change_lang">Змінювати метод введення клавішею пробіл</string>
     <string name="prefs_long_press_keyboard_to_change_lang_summary">Довге натискання клавіші пробіл виводить меню вибору способу введення</string>
-    <string name="spell_checker_service_name">Перевірка правопису HeliBoard</string>
+    <string name="spell_checker_service_name">Перевірка правопису AI Keyboard</string>
     <string name="prefs_narrow_key_gaps">Збільшені клавіші</string>
     <string name="delete_swipe">Видаляти ковзанням</string>
     <string name="delete_swipe_summary">Проведіть пальцем по клавіші видалення, щоб виділити і вилучити більші фрагменти тексту за раз</string>
@@ -517,7 +517,7 @@
     <string name="gesture_data_background_gathering_manual_save">Типово відхилити</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Дані зберігаються вручну за допомогою клавіши панелі інструментів</string>
     <string name="gesture_data_background_gathering_info">Більше інформації</string>
-    <string name="gesture_data_background_gathering_info_message">Увімкнення збору фонових даних дозволяє Heliboard записувати жести, які ви вводите в інших програмах. Це дуже корисно для проекту набору жестів, оскільки він може створювати значну кількість даних, хоча й нижчої якості, ніж активний збір. Збір фонових даних не є заміною активно зібраних даних, він має бути доповненням, оскільки якість даних важливіша за кількість.\n\nФоновий збір має високий потенціал збору даних, які ви можете вважати занадто приватними, щоб поділитися ними, навіть якщо вони опубліковані анонімно. З цієї причини ми хочемо пояснити, коли збираються дані жестів і як ви можете на них впливати.\n\nВи можете знайти відео, яке пояснює більше про збір фонових даних, у розділі посилань у нижньому правому куті цього екрана.</string>
+    <string name="gesture_data_background_gathering_info_message">Увімкнення збору фонових даних дозволяє AI Keyboard записувати жести, які ви вводите в інших програмах. Це дуже корисно для проекту набору жестів, оскільки він може створювати значну кількість даних, хоча й нижчої якості, ніж активний збір. Збір фонових даних не є заміною активно зібраних даних, він має бути доповненням, оскільки якість даних важливіша за кількість.\n\nФоновий збір має високий потенціал збору даних, які ви можете вважати занадто приватними, щоб поділитися ними, навіть якщо вони опубліковані анонімно. З цієї причини ми хочемо пояснити, коли збираються дані жестів і як ви можете на них впливати.\n\nВи можете знайти відео, яке пояснює більше про збір фонових даних, у розділі посилань у нижньому правому куті цього екрана.</string>
     <string name="gesture_data_background_gathering_indicator">Індикатор збору даних</string>
     <string name="gesture_data_background_gathering_indicator_message">У будь-який час, коли дані жестів можуть бути записані, ви побачите значок індикатора в нижній лівій частині клавіатури. Коли коло заповнено, принаймні один жест зібрано та чекає на збереження. Дані зберігаються або за допомогою клавіші панелі інструментів (див &lt;i&gt;%1$s&lt;/i&gt;), або автоматично (коли &lt;i&gt;%2$s&lt;/i&gt; вимкнено). Автоматичне збереження зазвичай відбувається під час перемикання текстових полів або закриття клавіатури, але також може статися, якщо текстове поле змінюється з якоїсь іншої причини. При збереженні даних індикатор на короткий час стане зеленим.</string>
     <string name="gesture_data_background_gathering_control">Як контролювати, що збережено</string>

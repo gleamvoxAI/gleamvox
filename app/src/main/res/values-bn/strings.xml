@@ -4,9 +4,9 @@
     modified
     SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
 --><resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" xmlns:tools="http://schemas.android.com/tools">
-    <string name="spell_checker_service_name">হেলিবোর্ড বানান পরীক্ষক</string>
-    <string name="ime_settings">হেলিবোর্ড সেটিংস</string>
-    <string name="android_spell_checker_settings">হেলিবোর্ড বানান পরীক্ষক সেটিংস</string>
+    <string name="spell_checker_service_name">AI Keyboard বানান পরীক্ষক</string>
+    <string name="ime_settings">AI Keyboard সেটিংস</string>
+    <string name="android_spell_checker_settings">AI Keyboard বানান পরীক্ষক সেটিংস</string>
     <string name="use_contacts_dict">পরিচিতি তালিকায় নাম অনুসন্ধান</string>
     <string name="vibrate_on_keypress">কিপ্রেস কম্পন</string>
     <string name="sound_on_keypress">কিপ্রেসের শব্দ</string>
@@ -515,7 +515,7 @@
     <string name="gesture_data_background_gathering_manual_save">ডিফল্টরূপে বাতিল</string>
     <string name="gesture_data_background_gathering_manual_save_summary">টুলবার বোতামের মাধ্যমে তথ্য ম্যানুয়ালি সংরক্ষণ করা হয়</string>
     <string name="gesture_data_background_gathering_info">আরও তথ্য</string>
-    <string name="gesture_data_background_gathering_info_message">নেপথ্য তথ্য সংগ্রহ চালু করলে Heliboard অন্যান্য অ্যাপে আপনার টাইপ করা অঙ্গুলিহেলন রেকর্ড করতে পারবে। অঙ্গুলিহেলন টাইপিং প্রকল্পের জন্য এটি অত্যন্ত উপকারী কারণ এটি প্রচুর পরিমাণে তথ্য সংগ্রহ করতে পারে, যদিও সক্রিয় সংগ্রহের তুলনায় মানের দিক থেকে কিছুটা কম। নেপথ্য তথ্য সংগ্রহ সক্রিয়ভাবে সংগৃহীত তথ্যের বিকল্প নয়, এটি একটি সংযোজন হিসেবে উদ্দেশ্যিত, কারণ পরিমাণের চেয়ে তথ্যের মান বেশি গুরুত্বপূর্ণ।\n\n নেপথ্য সংগ্রহে এমন তথ্য সংগ্রহের উচ্চ সম্ভাবনা রয়েছে যা আপনি হয়তো বেনামে প্রকাশিত হলেও শেয়ার করার জন্য অনেক বেশি ব্যক্তিগত মনে করতে পারেন। এই কারণে আমরা স্পষ্ট করতে চাই কখন অঙ্গুলিহেলন তথ্য সংগ্রহ করা হচ্ছে এবং আপনি কীভাবে তা নিয়ন্ত্রণ করতে পারেন।\n\n নেপথ্য তথ্য সংগ্রহ সম্পর্কে আরও ব্যাখ্যাকারী একটি ভিডিও এই স্ক্রিনের নিচে ডানে লিঙ্ক বিভাগে পাওয়া যাবে।</string>
+    <string name="gesture_data_background_gathering_info_message">নেপথ্য তথ্য সংগ্রহ চালু করলে AI Keyboard অন্যান্য অ্যাপে আপনার টাইপ করা অঙ্গুলিহেলন রেকর্ড করতে পারবে। অঙ্গুলিহেলন টাইপিং প্রকল্পের জন্য এটি অত্যন্ত উপকারী কারণ এটি প্রচুর পরিমাণে তথ্য সংগ্রহ করতে পারে, যদিও সক্রিয় সংগ্রহের তুলনায় মানের দিক থেকে কিছুটা কম। নেপথ্য তথ্য সংগ্রহ সক্রিয়ভাবে সংগৃহীত তথ্যের বিকল্প নয়, এটি একটি সংযোজন হিসেবে উদ্দেশ্যিত, কারণ পরিমাণের চেয়ে তথ্যের মান বেশি গুরুত্বপূর্ণ।\n\n নেপথ্য সংগ্রহে এমন তথ্য সংগ্রহের উচ্চ সম্ভাবনা রয়েছে যা আপনি হয়তো বেনামে প্রকাশিত হলেও শেয়ার করার জন্য অনেক বেশি ব্যক্তিগত মনে করতে পারেন। এই কারণে আমরা স্পষ্ট করতে চাই কখন অঙ্গুলিহেলন তথ্য সংগ্রহ করা হচ্ছে এবং আপনি কীভাবে তা নিয়ন্ত্রণ করতে পারেন।\n\n নেপথ্য তথ্য সংগ্রহ সম্পর্কে আরও ব্যাখ্যাকারী একটি ভিডিও এই স্ক্রিনের নিচে ডানে লিঙ্ক বিভাগে পাওয়া যাবে।</string>
     <string name="gesture_data_background_gathering_indicator">তথ্য সংগ্রহ নির্দেশক</string>
     <string name="gesture_data_background_gathering_indicator_message">যখনই অঙ্গুলিহেলন তথ্য রেকর্ড হতে পারে, কিবোর্ডের নিচে বামে একটি নির্দেশক আইকন দেখাবে। বৃত্তটি পূর্ণ হলে, কমপক্ষে একটি অঙ্গুলিহেলন সংগৃহীত হয়েছে এবং সংরক্ষণের অপেক্ষায় আছে। টুলবার বোতাম ব্যবহার করে (&lt;i&gt;%1$s&lt;/i&gt; দেখুন) অথবা স্বয়ংক্রিয়ভাবে (&lt;i&gt;%2$s&lt;/i&gt; নিষ্ক্রিয় থাকলে) তথ্য সংরক্ষণ হয়। সাধারণত ইনপুট ক্ষেত্র পরিবর্তন বা কিবোর্ড বন্ধ করার সময় স্বয়ংক্রিয়ভাবে সংরক্ষণ হয়, তবে ইনপুট ক্ষেত্র অন্য কারণে পরিবর্তিত হলেও হতে পারে। তথ্য সংরক্ষণের সময় নির্দেশকটি কিছুক্ষণের জন্য সবুজ হয়ে যাবে।</string>
     <string name="gesture_data_background_gathering_control">কী সংরক্ষিত হবে তা নিয়ন্ত্রণ পদ্ধতি</string>

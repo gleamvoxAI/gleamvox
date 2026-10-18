@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Gleamvox Spell Checker</string>
+    <string name="ime_settings">Gleamvox Settings</string>
+    <string name="android_spell_checker_settings">Gleamvox Spell Checker Settings</string>
+    <string name="style_name_Aikb" tools:keep="@string/style_name_Aikb">Gleamvox</string>
+    <string name="theme_name_aikb" tools:keep="@string/theme_name_aikb">Gleamvox (as in system)</string>
+    <string name="theme_name_aikb_light" tools:keep="@string/theme_name_aikb_light">Gleamvox (light)</string>
+    <string name="theme_name_aikb_dark" tools:keep="@string/theme_name_aikb_dark">Gleamvox (dark)</string>
+    <string name="gesture_data_background_gathering_info_message">
+        Turning on background data collection allows Gleamvox to record gestures you type in other apps.
+        This is very useful for the gesture typing project as it can produce a considerable amount of data, albeit at lower quality than active gathering.
+        Background data collection is not a replacement for actively gathered data, it is meant to be an addition, as data quality is more important than quantity.\n\n
+        Background gathering has high potential of collecting data that you may consider too private to share, even when published anonymously.
+        For this reason we want to clarify when gesture data is being gathered, and how you can influence it.\n\n
+        You can find a video explaining more about background data gathering in the links section at the bottom right of this screen.
+    </string>
+    <string name="voice_unavailable">No voice input available: allow the microphone for Gleamvox in the Android settings</string>
+    <string name="features_title">Gleamvox features</string>
+    <string name="feature_voice_text">Dictate without leaving the keyboard. Needs the microphone; speech is recognized by the Android speech service, Gleamvox keeps no sound.</string>
+    <string name="openai_proxy_summary">Only the requests of Gleamvox to OpenAI go through it; voice input and everything else are not affected. Useful if OpenAI is reachable only through a VPN or tunnel app: then Gleamvox does not have to be added to the VPN.</string>
+    <string name="openai_proxy_suggestion">If OpenAI works on this phone only through a VPN: add Gleamvox to the VPN, or set the local proxy port of your VPN app below (then voice input keeps working without the VPN).</string>
+    <string name="openai_certificate_hint">The connection to OpenAI failed the certificate check. If your VPN or proxy replaces certificates with its own, Gleamvox does not trust such a connection, for your safety. Use a VPN mode without certificate replacement, or the proxy for OpenAI requests.</string>
+    <string name="ai_usage_summary">Daily ceiling of Gleamvox for ✨ and cleanup (0 = no AI text requests). Counted only on this phone, nothing is sent anywhere. Also set a monthly spending limit on the OpenAI site.</string>
+    <string name="ai_error_internet_off">Internet access is off in Gleamvox settings.</string>
+    <string name="ai_error_daily_cap">The daily limit of Gleamvox requests (%d) is reached. You can change it in the settings.</string>
+    <string name="voice_api_problem_internet_off">internet access is off in Gleamvox</string>
+    <string name="voice_api_consent_text">When you dictate, the recording of your voice is sent to OpenAI with your own API key; OpenAI charges it by its price list to the balance of this key. Gleamvox does not keep the sound: it is only in the phone memory and is wiped right after sending. Gleamvox has no server of its own.</string>
+    <string name="voice_mic_permission">Allow the microphone for Gleamvox, then press again.</string>
+    <string name="voice_api_check_internet_off">Internet access is off in Gleamvox</string>
+    <string name="ai_screen_intro">Voice, ✨ and the cleanup of dictation work with your own OpenAI API key. Gleamvox has no server of its own and stores nothing outside this phone.</string>
+    <string name="ai_text_consent_text">When you tap a ✨ command, the selected part or the text of the field is sent to OpenAI with your own API key. When the cleanup of dictation is on, the text of each dictated phrase is sent for cleanup. OpenAI charges it by its price list to the balance of your key. Gleamvox keeps no text and has no server of its own.</string>
+    <string name="ai_enable_text">Voice with punctuation, the ✨ button (fix, rewrite, shorten, translate) and the cleanup of dictation from “uh” and filler words. The sound of a dictated phrase and the text you send with ✨ or by dictation go to OpenAI with your API key; OpenAI charges it by its price list to the balance of this key. Gleamvox keeps nothing and has no server of its own.</string>
+</resources>

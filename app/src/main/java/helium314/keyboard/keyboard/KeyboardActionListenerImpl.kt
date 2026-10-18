@@ -54,6 +54,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
         keyboardSwitcher.onPressKey(primaryCode, pointerCount, latinIME.currentAutoCapsState, latinIME.currentRecapitalizeState)
         // we need to use LatinIME for handling of key-down audio and haptics
         latinIME.hapticAndAudioFeedback(primaryCode, repeatCount, hapticEvent)
+        if (primaryCode == KeyCode.VOICE_INPUT && repeatCount == 0) latinIME.onMicDown() // stage 5g-24
     }
 
     override fun onLongPressKey(primaryCode: Int) {
@@ -63,6 +64,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 
     override fun onReleaseKey(primaryCode: Int, withSliding: Boolean) {
         metaOnReleaseKey(primaryCode)
+        if (primaryCode == KeyCode.VOICE_INPUT && withSliding) latinIME.onMicTouchCancelled() // stage 5g-24: slid away
         keyboardSwitcher.onReleaseKey(primaryCode, withSliding, latinIME.currentAutoCapsState, latinIME.currentRecapitalizeState)
     }
 

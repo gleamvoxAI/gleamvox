@@ -99,6 +99,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         fun onAiLongPress()
         /** long press on the round microphone: continuous dictation once (stage 5g); false: not handled */
         fun onMicLongPress(): Boolean
+        /** stage 5g-24: the round microphone is touched (the microphone opens now) / the touch is cancelled */
+        fun onMicDown() {}
+        fun onMicTouchCancelled() {}
         /** a setting that decides the colors of ✨ and the microphone changed */
         fun onAiStateChanged()
     }
@@ -707,7 +710,8 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         // ✨ and the microphone glow gold on it when they work through AI (stage 5e)
         view.background = StripGlowDrawable(context, colors.get(ColorType.TOOL_BAR_EXPAND_KEY_BACKGROUND), PanelPalette.from(colors))
         if (view.tag == ToolbarKey.VOICE) view.setOnTouchListener { v, e ->
-            if (e.actionMasked == MotionEvent.ACTION_DOWN) (v.background as? StripGlowDrawable)?.startRipple(e.x, e.y)
+            if (e.actionMasked == MotionEvent.ACTION_DOWN) { (v.background as? StripGlowDrawable)?.startRipple(e.x, e.y); listener.onMicDown() }
+            if (e.actionMasked == MotionEvent.ACTION_CANCEL) listener.onMicTouchCancelled()
             false // the key itself handles the press
         }
     }

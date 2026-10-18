@@ -49,7 +49,8 @@ class ManifestBackupTest {
         val main = parse("src/main/AndroidManifest.xml").elements("uses-permission").map { it.getAttributeNS(androidNs, "name") }
         assertTrue("android.permission.INTERNET" !in main)
         // ai-dict-2: the download service and its notification are only in the personal manifest
-        assertTrue(main.none { it in setOf("android.permission.FOREGROUND_SERVICE", "android.permission.FOREGROUND_SERVICE_DATA_SYNC", "android.permission.POST_NOTIFICATIONS") })
+        assertTrue(main.none { it in setOf("android.permission.FOREGROUND_SERVICE", "android.permission.FOREGROUND_SERVICE_DATA_SYNC", "android.permission.POST_NOTIFICATIONS",
+            "android.permission.BLUETOOTH_CONNECT") })
         val personal = parse("src/aikbPersonal/AndroidManifest.xml")
         val toolsNs = "http://schemas.android.com/tools"
         val (removed, perms) = personal.elements("uses-permission").partition { it.getAttributeNS(toolsNs, "node") == "remove" }
@@ -58,7 +59,7 @@ class ManifestBackupTest {
         // ai-dict-2: the download of the AI dictionary: foreground service (dataSync) with a notification
         assertEquals(listOf("android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "android.permission.MODIFY_AUDIO_SETTINGS",
             "android.permission.MANAGE_OWN_CALLS", "android.permission.FOREGROUND_SERVICE", "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
-            "android.permission.POST_NOTIFICATIONS"),
+            "android.permission.POST_NOTIFICATIONS", "android.permission.BLUETOOTH_CONNECT"), // stage 5g-25: the class of a Bluetooth device
             perms.map { it.getAttributeNS(androidNs, "name") })
         // stage 5g-3: setMode(MODE_IN_COMMUNICATION) needs it on every Android (a normal permission, no dialog)
         assertEquals("", perms[2].getAttributeNS(androidNs, "maxSdkVersion"))

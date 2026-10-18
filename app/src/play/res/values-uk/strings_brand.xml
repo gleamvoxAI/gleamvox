@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-uk/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ime_settings">Налаштування Gleamvox</string>
+    <string name="android_spell_checker_settings">Налаштування перевірки правопису Gleamvox</string>
+    <string name="spell_checker_service_name">Перевірка правопису Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">Увімкнення збору фонових даних дозволяє Gleamvox записувати жести, які ви вводите в інших програмах. Це дуже корисно для проекту набору жестів, оскільки він може створювати значну кількість даних, хоча й нижчої якості, ніж активний збір. Збір фонових даних не є заміною активно зібраних даних, він має бути доповненням, оскільки якість даних важливіша за кількість.\n\nФоновий збір має високий потенціал збору даних, які ви можете вважати занадто приватними, щоб поділитися ними, навіть якщо вони опубліковані анонімно. З цієї причини ми хочемо пояснити, коли збираються дані жестів і як ви можете на них впливати.\n\nВи можете знайти відео, яке пояснює більше про збір фонових даних, у розділі посилань у нижньому правому куті цього екрана.</string>
+</resources>

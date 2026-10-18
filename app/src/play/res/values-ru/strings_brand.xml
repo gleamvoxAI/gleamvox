@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-ru/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">Проверка правописания Gleamvox</string>
+    <string name="android_spell_checker_settings">Настройки проверки орфографии Gleamvox</string>
+    <string name="ime_settings">Настройки Gleamvox</string>
+    <string name="style_name_Aikb">Gleamvox</string>
+    <string name="theme_name_aikb">Gleamvox (как в системе)</string>
+    <string name="theme_name_aikb_light">Gleamvox (светлая)</string>
+    <string name="theme_name_aikb_dark">Gleamvox (тёмная)</string>
+    <string name="gesture_data_background_gathering_info_message">Включение сбора данных в фоновом режиме позволяет Gleamvox записывать жесты, которые вы вводите в других приложениях. Это очень полезно для проекта ввода текста с использованием жестов, поскольку позволяет получить значительный объём данных, хотя и более низкого качества, чем при активном сборе. Фоновый сбор данных не является заменой данным собираемым в активном режиме; он предназначен для дополнения, так как качество данных важнее их количества.\n\n Фоновый сбор позволяет получать данные, которые вы можете посчитать слишком личными для обмена, даже если они публикуются анонимно. По этой причине мы хотим уточнить, когда собираются данные о жестах и как вы можете на это повлиять.\n\n Вы можете найти видео с более подробным объяснением процесса сбора данных в фоновом режиме в разделе ссылок в правом нижнем углу этого экрана.</string>
+    <string name="voice_unavailable">Голосовой ввод недоступен: разрешите микрофон для Gleamvox в настройках Android</string>
+    <string name="features_title">Возможности Gleamvox</string>
+    <string name="feature_voice_text">Диктуйте, не покидая клавиатуру. Нужен микрофон; речь распознаёт служба распознавания Android, Gleamvox звук не хранит.</string>
+    <string name="openai_proxy_summary">Через него идут только запросы Gleamvox к OpenAI; голосовой ввод и всё остальное не затрагиваются. Нужен, если OpenAI доступен только через VPN или программу-туннель: тогда Gleamvox не придётся добавлять в VPN.</string>
+    <string name="openai_proxy_suggestion">Если OpenAI на этом телефоне работает только через VPN: добавьте Gleamvox в VPN или укажите ниже локальный порт прокси вашей программы VPN (тогда голосовой ввод продолжит работать без VPN).</string>
+    <string name="openai_certificate_hint">Соединение с OpenAI не прошло проверку сертификата. Если ваш VPN или прокси подменяет сертификаты своими, Gleamvox такому соединению не доверяет ради вашей безопасности. Используйте режим VPN без подмены сертификатов или прокси для запросов к OpenAI.</string>
+    <string name="ai_usage_summary">Дневной потолок Gleamvox для ✨ и очистки (0: текстовых запросов к ИИ нет). Считается только на этом телефоне, никуда не отправляется. Месячный лимит расходов поставьте и на сайте OpenAI.</string>
+    <string name="ai_error_internet_off">Доступ к интернету выключен в настройках Gleamvox.</string>
+    <string name="ai_error_daily_cap">Дневной лимит запросов Gleamvox (%d) исчерпан. Его можно изменить в настройках.</string>
+    <string name="voice_api_problem_internet_off">доступ к интернету в Gleamvox выключен</string>
+    <string name="voice_api_consent_text">Когда вы диктуете, запись вашего голоса уходит в OpenAI по вашему собственному ключу API; OpenAI берёт оплату по своему тарифу с баланса этого ключа. Gleamvox звук не хранит: он только в памяти телефона и стирается сразу после отправки. Своего сервера у Gleamvox нет.</string>
+    <string name="voice_mic_permission">Разрешите Gleamvox микрофон и нажмите ещё раз.</string>
+    <string name="voice_api_check_internet_off">Доступ к интернету в Gleamvox выключен</string>
+    <string name="ai_screen_intro">Голос, ✨ и очистка диктовки работают по вашему собственному ключу API OpenAI. У Gleamvox нет своего сервера, ничего не хранится вне этого телефона.</string>
+    <string name="ai_text_consent_text">Когда вы нажимаете команду ✨, выделенный фрагмент или текст поля отправляется в OpenAI по вашему собственному ключу API. Если включена очистка диктовки, текст каждой продиктованной фразы отправляется на очистку. OpenAI берёт оплату по своему тарифу с баланса вашего ключа. Gleamvox не хранит текст и не имеет своего сервера.</string>
+    <string name="ai_enable_text">Голос со знаками препинания, кнопка ✨ (исправить, переписать, сократить, перевести) и очистка диктовки от «э-э» и слов-паразитов. Звук продиктованной фразы и текст, который вы отправляете кнопкой ✨ или диктовкой, уходят в OpenAI по вашему ключу API; OpenAI берёт оплату по своему тарифу с баланса этого ключа. Gleamvox ничего не хранит и своего сервера не имеет.</string>
+</resources>

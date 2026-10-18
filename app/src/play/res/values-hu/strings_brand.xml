@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-hu/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ime_settings">Gleamvox beállítások</string>
+    <string name="android_spell_checker_settings">Gleamvox helyesírás-ellenőrző beállításai</string>
+    <string name="spell_checker_service_name">Gleamvox helyesírás-ellenőrző</string>
+    <string name="gesture_data_background_gathering_info_message">A háttérben történő adatgyűjtés bekapcsolása lehetővé teszi a Gleamvox számára, hogy rögzítse a más alkalmazásokban beírt ujjmozdulatokat. Ez nagyon hasznos az ujjmozdulat-gépelési projekt számára, mivel jelentős mennyiségű adatot tud előállítani, bár az aktív gyűjtésnél alacsonyabb minőségben. A háttérben történő adatgyűjtés nem helyettesíti az aktívan gyűjtött adatokat, csupán kiegészítésként szolgál, mivel az adatok minősége fontosabb a mennyiségnél.\n\n A háttérben történő adatgyűjtés során nagy eséllyel gyűlhetnek olyan adatok is, amelyeket túlságosan privátnak tarthat a megosztáshoz, még anonim közzététel esetén is. Emiatt szeretnénk tisztázni, hogy mikor történik ujjmozdulat-adatgyűjtés, és hogyan befolyásolhatja azt.\n\n A képernyő jobb alsó sarkában található hivatkozások között talál egy videót, amely bővebben elmagyarázza a háttérben történő adatgyűjtést.</string>
+</resources>

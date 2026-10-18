@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-fa/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="spell_checker_service_name">غلط‌گیر املایی Gleamvox</string>
+    <string name="android_spell_checker_settings">تنظیمات غلط‌گیر املایی Gleamvox</string>
+    <string name="ime_settings">تنظیمات Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">فعال کردن جمع‌آوری داده‌ها در پس‌زمینه به Gleamvox اجازه می‌دهد اشاراتی را که در برنامه‌های دیگر تایپ می‌کنید ثبت کند. این کار برای پروژه تایپ اشاره‌ای بسیار مفید است، زیرا می‌تواند حجم قابل توجهی داده تولید کند، هرچند با کیفیتی پایین‌تر از جمع‌آوری فعال. جمع‌آوری داده‌ها در پس‌زمینه جایگزینی برای داده‌های جمع‌آوری فعال نیست، بلکه مکملی برای آن است، چرا که کیفیت داده‌ها مهم‌تر از کمیت آن‌هاست.\n\nجمع‌آوری در پس‌زمینه احتمال بالایی دارد داده‌هایی را جمع‌آوری کند که ممکن است آن‌ها را حتی در صورت انتشار ناشناس، برای اشتراک‌گذاری بیش از حد خصوصی بدانید. به همین دلیل می‌خواهیم روشن کنیم که چه زمانی داده‌های اشاره‌ای جمع‌آوری می‌شوند و چگونه می‌توانید بر آن تأثیر بگذارید.\n\nویدیویی با توضیحات بیشتر درباره جمع‌آوری داده‌ها در پس‌زمینه در بخش پیوندهای پایین این صفحه موجود است.</string>
+</resources>

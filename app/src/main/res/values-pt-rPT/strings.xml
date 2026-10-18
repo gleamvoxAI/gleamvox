@@ -99,8 +99,8 @@
     <string name="incognito">Impor modo incógnito</string>
     <string name="day_night_mode">Modo diurno/noturno automático</string>
     <string name="day_night_mode_summary">Aparência usa as definições do sistema</string>
-    <string name="spell_checker_service_name">Corretor ortográfico HeliBoard</string>
-    <string name="ime_settings">Definições de HeliBoard</string>
+    <string name="spell_checker_service_name">Corretor ortográfico AI Keyboard</string>
+    <string name="ime_settings">Definições de AI Keyboard</string>
     <string name="settings_category_input">Introdução</string>
     <string name="settings_category_additional_keys">Teclas adicionais</string>
     <string name="settings_category_correction">Correções</string>
@@ -116,7 +116,7 @@
     <string name="prefs_long_press_keyboard_to_change_lang_summary">Toque longo na tecla de Espaço abre o menu de seleção do método de entrada</string>
     <string name="prefs_keyboard_height_scale">Altura do teclado</string>
     <string name="key_borders">Limite das teclas</string>
-    <string name="android_spell_checker_settings">Definições do corretor ortográfico HeliBoard</string>
+    <string name="android_spell_checker_settings">Definições do corretor ortográfico AI Keyboard</string>
     <string name="auto_correction_confidence">Confiança da correção automática</string>
     <string name="enable_clipboard_history_summary">Se desativado, a tecla da área de transferência colará o conteúdo disponível</string>
     <string name="select_input_method">"Escolher o método de entrada"</string>
@@ -513,7 +513,7 @@
     <string name="gesture_data_background_gathering_manual_save">Descartar por padrão</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Os dados são guardados manualmente através da tecla da barra de ferramentas</string>
     <string name="gesture_data_background_gathering_info">Mais informação</string>
-    <string name="gesture_data_background_gathering_info_message">Ativar a recolha de dados em segundo plano permite ao Heliboard registar os gestos que escreve noutras apps. Isto é muito útil para o projeto de digitação por gestos, pois pode gerar uma quantidade considerável de dados, embora com uma qualidade inferior à da recolha ativa. A recolha de dados em segundo plano não substitui a recolha ativa de dados, mas sim complementa-a, pois a qualidade dos dados é mais importante do que a quantidade.\n\n A recolha em segundo plano tem um elevado potencial para recolher dados que pode considerar demasiado privados para partilhar, mesmo quando publicados anonimamente. Por este motivo, queremos esclarecer quando são recolhidos dados de gestos e como o pode influenciar.\n\n Pode encontrar um vídeo a explicar mais sobre a recolha de dados em segundo plano na seção de links no canto inferior direito deste ecrã.</string>
+    <string name="gesture_data_background_gathering_info_message">Ativar a recolha de dados em segundo plano permite ao AI Keyboard registar os gestos que escreve noutras apps. Isto é muito útil para o projeto de digitação por gestos, pois pode gerar uma quantidade considerável de dados, embora com uma qualidade inferior à da recolha ativa. A recolha de dados em segundo plano não substitui a recolha ativa de dados, mas sim complementa-a, pois a qualidade dos dados é mais importante do que a quantidade.\n\n A recolha em segundo plano tem um elevado potencial para recolher dados que pode considerar demasiado privados para partilhar, mesmo quando publicados anonimamente. Por este motivo, queremos esclarecer quando são recolhidos dados de gestos e como o pode influenciar.\n\n Pode encontrar um vídeo a explicar mais sobre a recolha de dados em segundo plano na seção de links no canto inferior direito deste ecrã.</string>
     <string name="gesture_data_background_gathering_indicator">Indicador de recolha de dados</string>
     <string name="gesture_data_background_gathering_indicator_message">Sempre que os dados de gestos forem registados, verá um ícone indicador no canto inferior esquerdo do teclado. Quando o círculo estiver preenchido, significa que pelo menos um gesto foi recolhido e está à espera de ser guardado. Os dados são guardados através da tecla da barra de ferramentas (consulte &lt;i&gt;%1$s&lt;/i&gt;) ou automaticamente (quando &lt;i&gt;%2$s&lt;/i&gt; estiver desativado). O guardar automático ocorre normalmente ao alternar entre campos de texto ou ao fechar o teclado, mas também pode ocorrer se o campo de texto for alterado por algum outro motivo. Quando os dados estiverem a ser guardados, o indicador ficará verde por pouco tempo.</string>
     <string name="gesture_data_background_gathering_control">Como controlar o que é guardado</string>

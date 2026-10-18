@@ -101,8 +101,8 @@
     <string name="settings_no_limit">Bez limitu</string>
     <string name="enable_clipboard_history">Povolit historii schránky</string>
     <string name="clipboard_history_retention_time">Doba zachování historie</string>
-    <string name="spell_checker_service_name">Kontrola pravopisu HeliBoard</string>
-    <string name="android_spell_checker_settings">Nastavení kontroly pravopisu HeliBoard</string>
+    <string name="spell_checker_service_name">Kontrola pravopisu AI Keyboard</string>
+    <string name="android_spell_checker_settings">Nastavení kontroly pravopisu AI Keyboard</string>
     <string name="autospace_after_punctuation_summary">Automaticky vloží mezeru po ukončení slova znaménkem</string>
     <string name="incognito">Vynutit režim inkognito</string>
     <string name="prefs_force_incognito_mode_summary">Vypnout učení nových slov</string>
@@ -117,7 +117,7 @@
     <string name="prefs_long_press_keyboard_to_change_lang_summary">Dlouhý stisk mezerníku zobrazí výzvu změny vstupní metody</string>
     <string name="prefs_keyboard_height_scale">Měřítko výšky klávesnice</string>
     <string name="day_night_mode_summary">Vzhled podle systémového nastavení</string>
-    <string name="ime_settings">Nastavení HeliBoard</string>
+    <string name="ime_settings">Nastavení AI Keyboard</string>
     <string name="settings_category_suggestions">Návrhy</string>
     <string name="show_emoji_key">Klávesa pro emodži</string>
     <string name="enable_clipboard_history_summary">Pokud vypnuto, tlačítko schránky vloží obsah schránky, pokud nějaký existuje</string>
@@ -516,7 +516,7 @@
     <string name="gesture_data_background_gathering_manual_save">Zahodit ve výchozím nastavení</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Data jsou uložena ručně pomocí klávesy na panelu nástrojů</string>
     <string name="gesture_data_background_gathering_info">Další informace</string>
-    <string name="gesture_data_background_gathering_info_message">Zapnutím sběru dat na pozadí umožníte aplikaci Heliboard zaznamenávat gesta, která zadáváte v jiných aplikacích. To je velmi užitečné pro projekt psaní pomocí gest, protože tak lze získat značné množství dat, i když v nižší kvalitě než při aktivním sběru. Sběr dat na pozadí nenahrazuje aktivně shromážděná data, ale má je doplňovat, protože kvalita dat je důležitější než jejich množství.\n\n Sběr na pozadí s sebou nese vysoké riziko shromáždění dat, která můžete považovat za příliš soukromá na to, abyste je sdíleli, a to i v případě, že jsou zveřejněna anonymně. Z tohoto důvodu chceme objasnit, kdy se data o gestech shromažďují a jak to můžete ovlivnit.\n\n Video s podrobnějšími informacemi o sběru dat na pozadí najdete v sekci odkazů v pravém dolním rohu této obrazovky.</string>
+    <string name="gesture_data_background_gathering_info_message">Zapnutím sběru dat na pozadí umožníte aplikaci AI Keyboard zaznamenávat gesta, která zadáváte v jiných aplikacích. To je velmi užitečné pro projekt psaní pomocí gest, protože tak lze získat značné množství dat, i když v nižší kvalitě než při aktivním sběru. Sběr dat na pozadí nenahrazuje aktivně shromážděná data, ale má je doplňovat, protože kvalita dat je důležitější než jejich množství.\n\n Sběr na pozadí s sebou nese vysoké riziko shromáždění dat, která můžete považovat za příliš soukromá na to, abyste je sdíleli, a to i v případě, že jsou zveřejněna anonymně. Z tohoto důvodu chceme objasnit, kdy se data o gestech shromažďují a jak to můžete ovlivnit.\n\n Video s podrobnějšími informacemi o sběru dat na pozadí najdete v sekci odkazů v pravém dolním rohu této obrazovky.</string>
     <string name="gesture_data_background_gathering_indicator">Indikátor sběru dat</string>
     <string name="gesture_data_background_gathering_indicator_message">Kdykoli se zaznamenávají údaje o gestech, zobrazí se v levém dolním rohu klávesnice ikona indikátoru. Je-li kruh vyplněn, znamená to, že bylo zaznamenáno alespoň jedno gesto a čeká na uložení. Data se ukládají buď pomocí tlačítka na panelu nástrojů (viz &lt;i&gt;%1$s&lt;/i&gt;), nebo automaticky (pokud je &lt;i&gt;%2$s&lt;/i&gt; deaktivováno). K automatickému ukládání obvykle dochází při přepínání textových polí nebo při zavření klávesnice, ale může k němu dojít i v případě, že se textové pole změní z nějakého jiného důvodu. Při ukládání dat se indikátor na krátkou dobu zbarví zeleně.</string>
     <string name="gesture_data_background_gathering_control">Jak ovládat, co je ukládáno</string>

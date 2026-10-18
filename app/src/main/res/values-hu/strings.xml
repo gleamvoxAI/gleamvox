@@ -99,8 +99,8 @@
     <string name="settings_no_limit">Korlátlan</string>
     <string name="enable_clipboard_history">Vágólap előzményeinek engedélyezése</string>
     <string name="key_borders">Betűhatárok</string>
-    <string name="ime_settings">HeliBoard beállítások</string>
-    <string name="android_spell_checker_settings">HeliBoard helyesírás-ellenőrző beállításai</string>
+    <string name="ime_settings">AI Keyboard beállítások</string>
+    <string name="android_spell_checker_settings">AI Keyboard helyesírás-ellenőrző beállításai</string>
     <string name="settings_category_additional_keys">További billentyűk</string>
     <string name="delete_swipe_summary">A törlés billentyűről való csúsztatással nagyobb szövegrészleteket jelölhet ki és távolíthat el</string>
     <string name="enable_clipboard_history_summary">Ha le van tiltva, a vágólapbillentyű beilleszti a vágólap tartalmát, ha van</string>
@@ -112,7 +112,7 @@
     <string name="prefs_long_press_keyboard_to_change_lang_summary">A szóközbillentyű nyomva tartásával a beviteli mód kiválasztási menüje jelenik meg</string>
     <string name="prefs_long_press_keyboard_to_change_lang">Beviteli mód megváltoztatása a szóközzel</string>
     <string name="day_night_mode">Automatikus nappali/éjszakai mód</string>
-    <string name="spell_checker_service_name">HeliBoard helyesírás-ellenőrző</string>
+    <string name="spell_checker_service_name">AI Keyboard helyesírás-ellenőrző</string>
     <string name="delete_swipe">Törlés csúsztatással</string>
     <string name="show_emoji_key">Emodzsibillentyű</string>
     <string name="incognito">Inkognitómód kényszerítése</string>
@@ -514,7 +514,7 @@
     <string name="gesture_data_background_gathering_manual_save">Elutasítás alapértelmezés szerint</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Az adatok mentése kézzel, az eszköztár gombjával történik</string>
     <string name="gesture_data_background_gathering_info">További információk</string>
-    <string name="gesture_data_background_gathering_info_message">A háttérben történő adatgyűjtés bekapcsolása lehetővé teszi a Heliboard számára, hogy rögzítse a más alkalmazásokban beírt ujjmozdulatokat. Ez nagyon hasznos az ujjmozdulat-gépelési projekt számára, mivel jelentős mennyiségű adatot tud előállítani, bár az aktív gyűjtésnél alacsonyabb minőségben. A háttérben történő adatgyűjtés nem helyettesíti az aktívan gyűjtött adatokat, csupán kiegészítésként szolgál, mivel az adatok minősége fontosabb a mennyiségnél.\n\n A háttérben történő adatgyűjtés során nagy eséllyel gyűlhetnek olyan adatok is, amelyeket túlságosan privátnak tarthat a megosztáshoz, még anonim közzététel esetén is. Emiatt szeretnénk tisztázni, hogy mikor történik ujjmozdulat-adatgyűjtés, és hogyan befolyásolhatja azt.\n\n A képernyő jobb alsó sarkában található hivatkozások között talál egy videót, amely bővebben elmagyarázza a háttérben történő adatgyűjtést.</string>
+    <string name="gesture_data_background_gathering_info_message">A háttérben történő adatgyűjtés bekapcsolása lehetővé teszi a AI Keyboard számára, hogy rögzítse a más alkalmazásokban beírt ujjmozdulatokat. Ez nagyon hasznos az ujjmozdulat-gépelési projekt számára, mivel jelentős mennyiségű adatot tud előállítani, bár az aktív gyűjtésnél alacsonyabb minőségben. A háttérben történő adatgyűjtés nem helyettesíti az aktívan gyűjtött adatokat, csupán kiegészítésként szolgál, mivel az adatok minősége fontosabb a mennyiségnél.\n\n A háttérben történő adatgyűjtés során nagy eséllyel gyűlhetnek olyan adatok is, amelyeket túlságosan privátnak tarthat a megosztáshoz, még anonim közzététel esetén is. Emiatt szeretnénk tisztázni, hogy mikor történik ujjmozdulat-adatgyűjtés, és hogyan befolyásolhatja azt.\n\n A képernyő jobb alsó sarkában található hivatkozások között talál egy videót, amely bővebben elmagyarázza a háttérben történő adatgyűjtést.</string>
     <string name="gesture_data_background_gathering_indicator">Adatgyűjtés jelzője</string>
     <string name="gesture_data_background_gathering_indicator_message">Amikor csak lehetséges az ujjmozdulat-adatok rögzítése, egy jelzőikont fog látni a billentyűzet bal alsó sarkában. Ha a kör ki van töltve, legalább egy ujjmozdulat rögzítve lett, és mentésre vár. Az adatok mentése vagy az eszköztár gombjával (lásd: &lt;i&gt;%1$s&lt;/i&gt;) vagy automatikusan történik (ha a(z) &lt;i&gt;%2$s&lt;/i&gt; le van tiltva). Az automatikus mentés általában a szövegmezők közötti váltáskor vagy a billentyűzet bezárásakor történik, de előfordulhat akkor is, ha a szövegmező valamilyen más okból megváltozik. Az adatok mentésekor a jelző egy rövid időre zöldre vált.</string>
     <string name="gesture_data_background_gathering_control">Hogyan szabályozható, hogy mi legyen mentve</string>

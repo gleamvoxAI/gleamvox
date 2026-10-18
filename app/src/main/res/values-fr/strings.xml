@@ -134,8 +134,8 @@ Nouveau dictionnaire:
     <string name="user_dict_settings_more_languages">"Plus de langues…"</string>
     <string name="user_dict_word_already_present">Ce mot est déjà présent dans le dictionnaire utilisateur %s. Veuillez en saisir un autre.</string>
     <string name="user_dict_add_word_button">Ajouter un mot</string>
-    <string name="spell_checker_service_name">Correcteur orthographique HeliBoard</string>
-    <string name="android_spell_checker_settings">Paramètres du correcteur orthographique HeliBoard</string>
+    <string name="spell_checker_service_name">Correcteur orthographique AI Keyboard</string>
+    <string name="android_spell_checker_settings">Paramètres du correcteur orthographique AI Keyboard</string>
     <string name="number_row">Ligne de chiffres</string>
     <string name="delete_swipe">Balayage sur la touche Effacer</string>
     <string name="delete_swipe_summary">Glissez sur la touche de suppression pour supprimer des parties de texte en une seule fois</string>
@@ -152,7 +152,7 @@ Nouveau dictionnaire:
     <string name="checksum_mismatch_message">Fichier de bibliothèque inconnu. Êtes-vous sûr qu\'il provient d\'une source fiable et que c\'est pour \'%s\' ?</string>
     <string name="load_gesture_library_button_load">Charger bibliothèque</string>
     <string name="load_gesture_library_button_delete">Supprimer bibliothèque</string>
-    <string name="ime_settings">Paramètres d\'HeliBoard</string>
+    <string name="ime_settings">Paramètres d\'AI Keyboard</string>
     <string name="settings_category_input">Saisie</string>
     <string name="settings_category_correction">Corrections</string>
     <string name="settings_category_suggestions">Suggestions</string>
@@ -519,7 +519,7 @@ Nouveau dictionnaire:
     <string name="gesture_data_background_gathering_manual_save">Rejeter par défaut</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Les données sont sauvegardées manuellement via la touche de la barre d\'outils</string>
     <string name="gesture_data_background_gathering_info">Plus d\'informations</string>
-    <string name="gesture_data_background_gathering_info_message">L\'activation de la collecte de données en arrière-plan permet à Heliboard d\'enregistrer les gestes que vous saisissez dans d\'autres applications. Cela est très utile pour le projet de saisie gestuelle, car cela peut produire une quantité considérable de données, bien qu\'à une qualité inférieure à celle de la collecte active. La collecte de données en arrière-plan n\'est pas un remplacement pour les données collectées activement, elle est destinée à être un complément, car la qualité des données est plus importante que la quantité.\n\n La collecte en arrière-plan présente un potentiel élevé de collecte de données que vous pourriez considérer trop privées pour les partager, même lorsqu\'elles sont publiées de manière anonyme. Pour cette raison, nous voulons clarifier quand les données gestuelles sont collectées et comment vous pouvez l\'influencer.\n\n Vous pouvez trouver une vidéo expliquant davantage la collecte de données en arrière-plan dans la section des liens en bas à droite de cet écran.</string>
+    <string name="gesture_data_background_gathering_info_message">L\'activation de la collecte de données en arrière-plan permet à AI Keyboard d\'enregistrer les gestes que vous saisissez dans d\'autres applications. Cela est très utile pour le projet de saisie gestuelle, car cela peut produire une quantité considérable de données, bien qu\'à une qualité inférieure à celle de la collecte active. La collecte de données en arrière-plan n\'est pas un remplacement pour les données collectées activement, elle est destinée à être un complément, car la qualité des données est plus importante que la quantité.\n\n La collecte en arrière-plan présente un potentiel élevé de collecte de données que vous pourriez considérer trop privées pour les partager, même lorsqu\'elles sont publiées de manière anonyme. Pour cette raison, nous voulons clarifier quand les données gestuelles sont collectées et comment vous pouvez l\'influencer.\n\n Vous pouvez trouver une vidéo expliquant davantage la collecte de données en arrière-plan dans la section des liens en bas à droite de cet écran.</string>
     <string name="gesture_data_background_gathering_indicator">Indicateur de collecte de données</string>
     <string name="gesture_data_background_gathering_indicator_message">À tout moment lorsque des données gestuelle peuvent être enregistrées, vous verrez une icône d\'indicateur en bas à gauche du clavier. Lorsque le cercle est rempli, au moins un geste a été collecté et attend d\'être enregistré. Les données sont enregistrées soit en utilisant la touche de la barre d\'outils (voir &lt;i&gt;%1$s&lt;/i&gt;) ou automatiquement (lorsque &lt;i&gt;%2$s&lt;/i&gt; est désactivé). L\'enregistrement automatique se produit généralement lorsque vous passez à un autre champ de texte ou fermez le clavier, mais peut également se produire si le champ de texte change pour une autre raison. Lorsque les données sont enregistrées, l\'indicateur deviendra vert pendant un court moment.</string>
     <string name="gesture_data_background_gathering_control">Comment contrôler ce qui est enregistré</string>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-3: the name of the store version in the texts of the user (generated from res/values-ar/strings.xml) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ime_settings">إعدادات Gleamvox</string>
+    <string name="spell_checker_service_name">المدقق الإملائي لـ Gleamvox</string>
+    <string name="android_spell_checker_settings">إعدادات المدقق الإملائي لـ Gleamvox</string>
+    <string name="gesture_data_background_gathering_info_message">يتيح تشغيل جمع البيانات في الخلفية لـ Gleamvox تسجيل الإيماءات التي تكتبها في التطبيقات الأخرى. وهذا مفيد جدًا لمشروع الكتابة بالإيماءات، حيث يمكن أن ينتج عنه كمية كبيرة من البيانات، وإن كانت جودتها أقل من البيانات التي يتم جمعها بشكل نشط. ولا يُعد جمع البيانات في الخلفية بديلاً عن البيانات التي يتم جمعها بشكل نشط، بل يُقصد به أن يكون إضافة، حيث إن جودة البيانات أهم من كميتها.\n\n يحتمل أن يؤدي جمع البيانات في الخلفية إلى جمع بيانات قد تعتبرها خاصة جدًا بحيث لا يمكن مشاركتها، حتى عند نشرها بشكل مجهول. ولهذا السبب، نود توضيح متى يتم جمع بيانات الإيماءات، وكيف يمكنك التأثير على ذلك.\n\nيمكنك العثور على مقطع فيديو يشرح المزيد عن جمع البيانات في الخلفية في قسم الروابط في أسفل يمين هذه الشاشة.</string>
+</resources>

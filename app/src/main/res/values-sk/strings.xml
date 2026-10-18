@@ -98,12 +98,12 @@
     <string name="enable_clipboard_history">Povoliť históriu schránky</string>
     <string name="prefs_force_incognito_mode_summary">Vypnúť učenie nových slov</string>
     <string name="more_keys_strip_description">Viac kláves</string>
-    <string name="spell_checker_service_name">Kontrola pravopisu v HeliBoard</string>
-    <string name="android_spell_checker_settings">Nastavenia kontroly pravopisu v HeliBoard</string>
+    <string name="spell_checker_service_name">Kontrola pravopisu v AI Keyboard</string>
+    <string name="android_spell_checker_settings">Nastavenia kontroly pravopisu v AI Keyboard</string>
     <string name="show_emoji_key">Emoji klávesa</string>
     <string name="incognito">Vynútiť režim inkognito</string>
     <string name="settings_category_input">Vstup</string>
-    <string name="ime_settings">Nastavenia HeliBoardu</string>
+    <string name="ime_settings">Nastavenia AI Keyboardu</string>
     <string name="settings_category_additional_keys">Dodatočné klávesy</string>
     <string name="settings_category_correction">Korekcie</string>
     <string name="settings_category_suggestions">Návrhy</string>
@@ -520,7 +520,7 @@
     <string name="gesture_data_background_gathering_manual_save">V predvolenom nastavení odmietnuť</string>
     <string name="gesture_data_background_gathering_manual_save_summary">Údaje sa ukladajú ručne pomocou tlačidla na paneli nástrojov</string>
     <string name="gesture_data_background_gathering_info">Ďalšie informácie</string>
-    <string name="gesture_data_background_gathering_info_message">Zapnutím zberu údajov na pozadí umožníte aplikácii Heliboard zaznamenávať gestá, ktoré zadávate v iných aplikáciách. To je veľmi užitočné pre projekt písania pomocou gest, keďže takýmto spôsobom je možné získať značné množstvo údajov, hoci v nižšej kvalite ako pri aktívnom zbere. Zber údajov na pozadí nenahrádza aktívne zhromažďované údaje, ale má slúžiť ako doplnok, keďže kvalita údajov je dôležitejšia ako ich množstvo.\n\n Zber údajov na pozadí so sebou prináša vysoké riziko zhromažďovania údajov, ktoré môžete považovať za príliš súkromné na zdieľanie, a to aj v prípade, že sú zverejnené anonymne. Z tohto dôvodu chceme objasniť, kedy sa údaje o gestách zbierajú a ako to môžete ovplyvniť.\n\n V sekcii odkazov v pravom dolnom rohu tejto obrazovky nájdete video, v ktorom sa dozviete viac o zbere údajov na pozadí.</string>
+    <string name="gesture_data_background_gathering_info_message">Zapnutím zberu údajov na pozadí umožníte aplikácii AI Keyboard zaznamenávať gestá, ktoré zadávate v iných aplikáciách. To je veľmi užitočné pre projekt písania pomocou gest, keďže takýmto spôsobom je možné získať značné množstvo údajov, hoci v nižšej kvalite ako pri aktívnom zbere. Zber údajov na pozadí nenahrádza aktívne zhromažďované údaje, ale má slúžiť ako doplnok, keďže kvalita údajov je dôležitejšia ako ich množstvo.\n\n Zber údajov na pozadí so sebou prináša vysoké riziko zhromažďovania údajov, ktoré môžete považovať za príliš súkromné na zdieľanie, a to aj v prípade, že sú zverejnené anonymne. Z tohto dôvodu chceme objasniť, kedy sa údaje o gestách zbierajú a ako to môžete ovplyvniť.\n\n V sekcii odkazov v pravom dolnom rohu tejto obrazovky nájdete video, v ktorom sa dozviete viac o zbere údajov na pozadí.</string>
     <string name="gesture_data_background_gathering_indicator">Ukazovateľ zberu údajov</string>
     <string name="gesture_data_background_gathering_indicator_message">Vždy, keď sa zaznamenávajú údaje o gestách, v ľavom dolnom rohu klávesnice sa zobrazí indikačná ikona. Keď je kruh vyplnený, znamená to, že bolo zaznamenané aspoň jedno gesto a čaká na uloženie. Údaje sa ukladajú buď pomocou tlačidla na paneli nástrojov (pozri &lt;i&gt;%1$s&lt;/i&gt;), alebo automaticky (ak je &lt;i&gt;%2$s&lt;/i&gt; vypnutá). Automatické ukladanie sa zvyčajne vykonáva pri prechode medzi textovými poľami alebo pri zatvorení klávesnice, môže sa však uskutočniť aj v prípade, ak sa textové pole zmení z iného dôvodu. Počas ukladania údajov sa indikátor na krátku chvíľu zmení na zelený.</string>
     <string name="gesture_data_background_gathering_control">Ako ovládať, čo sa ukladá</string>
