@@ -1,0 +1,364 @@
+# ai-dict-1: phrases for comparing the dictionary and the language models.
+# kind	lang	context (text before the word)	typed	expected (several accepted variants with |)
+# T = the word typed with a typo (or correctly) and a space pressed: what ends up in the text
+# N = nothing typed yet after the context: is the expected word among the first 3 next-word suggestions
+# owner's case (4408): "Приа" was replaced by the abbreviation "Прим"; keeping "Приа" or "Привет" is fine, "Прим" is not
+T	ru		Приа	Приа|Привет
+T	ru		Ппивет	Привет
+T	ru	Привет,	как	как
+T	ru	Привет, как	дела	дела
+T	ru	Привет, как	длеа	дела
+T	ru	Я сегодня	пиду	приду|пойду
+T	ru	Я сегодня приду	поздго	поздно
+T	ru	Спасибо	бльшое	большое
+T	ru	Спасибо большое за	помлщь	помощь
+T	ru	Давай встретимся	завтоа	завтра
+T	ru	Давай встретимся завтра	утрм	утром
+T	ru	Я не	знаю	знаю
+T	ru	Я не	щнаю	знаю
+T	ru	Позвони мне,	когжа	когда
+T	ru	Позвони мне, когда	будешб	будешь
+T	ru	У меня	хоросо	хорошо
+T	ru	Мы купили новую	машмну	машину
+T	ru	Мама приготовила	ужмн	ужин
+T	ru	Я работаю в	офисе	офисе
+T	ru	Я работаю в	офисн	офисе
+T	ru	Отправь мне	фото	фото
+T	ru	Отправь мне	фотр	фото
+T	ru	Он живёт в	Москве	Москве
+T	ru	Он живёт в	Моские	Москве
+T	ru	Сколько это	стлит	стоит
+T	ru	Нужно купить	молрко	молоко
+T	ru	Нужно купить молоко и	хлен	хлеб
+T	ru	Я	люблю	люблю
+T	ru	Я	лбюлю	люблю
+T	ru	Встреча перенесена на	понеделбник	понедельник
+T	ru	Встреча перенесена на понедельник в десять	часов	часов
+T	ru	Где ты	сецчас	сейчас
+T	ru	Я уже	еду	еду
+T	ru	Я уже	жду	жду
+T	ru	Скоро	буду	буду
+T	ru	Можешь мне	помоч	помочь
+T	ru	Как прошёл твой	день	день
+T	ru	Как прошёл твой	дкнь	день
+T	ru	Хорошего	днч	дня
+T	ru	С днём	рожденич	рождения
+T	ru	Поздравляю с днём	рождения	рождения
+T	ru	Это очень	важнр	важно
+T	ru	Я думаю, что это	правильнр	правильно
+T	ru	Напиши, пожалуйста,	адоес	адрес
+T	ru	Это была	шутка	шутка
+T	ru	Он	прим	прим
+T	en		Helo	Hello
+T	en	Hello, how	are	are
+T	en	Hello, how	aer	are
+T	en	Hello, how are	yuo	you
+T	en	Thank you for your	hlep	help
+T	en	See you	tomorow	tomorrow
+T	en	I will be	lste	late
+T	en	I will be late for the	meetinf	meeting
+T	en	Can you send me the	file	file
+T	en	Can you send me the	fiel	file
+T	en	I don't	knwo	know
+T	en	What time is	ti	it
+T	en	Let's meet at the	cafe	cafe
+T	en	I need to buy some	mlik	milk
+T	en	We are going to the	beach	beach
+T	en	We are going to the	baech	beach
+T	en	Happy	brithday	birthday
+T	en	I love	yoi	you
+T	en	The weather is	gpod	good
+T	en	Please call me	back	back
+T	en	Please call me	bakc	back
+T	en	I am at	homr	home
+T	en	It was a great	dsy	day
+T	en	Where	sre	are
+T	en	Where are you	now	now
+T	en	I think it is	rihgt	right
+T	en	Could you	plaese	please
+T	en	I'll be there in five	minuets	minutes
+T	en	Have a nice	weekebd	weekend
+T	en	He lives in	London	London
+T	en	He lives in	Lindon	London
+N	ru	Привет		как|всем
+N	ru	Спасибо		за|большое
+N	ru	Спасибо большое		за
+N	ru	Добрый		день|вечер
+N	ru	Как		дела|ты
+N	ru	Привет, как		дела|ты
+N	ru	Я не		знаю|могу
+N	ru	Я тебя		люблю
+N	ru	Скоро		буду
+N	ru	Хорошего		дня|вечера
+N	ru	С днём		рождения
+N	ru	Позвони мне, когда		будешь|сможешь
+N	ru	Давай встретимся		завтра
+N	ru	Что ты		делаешь
+N	ru	Я уже		еду|дома|иду
+N	ru	До		свидания|завтра
+N	ru	Спокойной		ночи
+N	ru	Я буду через пять		минут
+N	ru	Сколько это		стоит
+N	ru	Не за		что
+N	en	Thank		you
+N	en	Thank you for your		help|time
+N	en	Good		morning|night|luck
+N	en	How are		you
+N	en	See you		tomorrow|soon|later
+N	en	I don't		know|think
+N	en	Happy		birthday
+N	en	I love		you
+N	en	What time is		it
+N	en	Have a nice		day|weekend
+N	en	I will be there in five		minutes
+N	en	Please call me		back
+N	en	Let me		know
+N	en	Nice to meet		you
+N	en	Can you help		me
+N	en	I'm on my		way
+N	en	Talk to you		later|soon
+N	en	Sorry for the		delay|late
+N	en	Merry		Christmas
+N	en	Good		morning|night|luck
+# owner's decision 2026-10-17: Gleamvox is multilingual; the same check on more languages (EN ES PT FR DE IT RU UK TR PL ID HI AR)
+T	es		Hola	Hola
+T	es		Hila	Hola
+T	es	Hola, ¿cómo	estás	estás
+T	es	Hola, ¿cómo	esyas	estás
+T	es	Muchas	gracais	gracias
+T	es	Nos vemos	manana	mañana
+T	es	Te quiero	mycho	mucho
+T	es	¿Dónde	estas	estás|estas
+T	es	Voy a llegar	tadre	tarde
+T	es	No te	preocipes	preocupes
+T	es	Buenos	dias	días
+N	es	Muchas		gracias
+N	es	Buenos		días|dias
+N	es	¿Cómo		estás|estas|está
+N	es	Te quiero		mucho
+N	es	Nos vemos		mañana|luego|pronto
+N	es	Feliz		cumpleaños|navidad|Navidad|año
+N	es	Lo siento		mucho
+N	es	¿Qué		tal|haces|pasa
+N	es	Buenas		noches|tardes
+N	es	No te		preocupes
+T	pt		Oi	Oi
+T	pt		Ola	Olá
+T	pt	Tudo	bme	bem
+T	pt	Muito	obrigafo	obrigado
+T	pt	Bom	fia	dia
+T	pt	Até	amanha	amanhã
+T	pt	Eu te	amk	amo
+T	pt	Não	sri	sei
+T	pt	Estou	chegndo	chegando
+T	pt	Você	etsá	está
+T	pt	Obrigado pela	ajuad	ajuda
+N	pt	Tudo		bem
+N	pt	Muito		obrigado|obrigada|bem
+N	pt	Bom		dia
+N	pt	Boa		noite|tarde|sorte
+N	pt	Até		logo|amanhã|mais
+N	pt	Eu te		amo
+N	pt	Obrigado pela		ajuda
+N	pt	Feliz		aniversário|natal|Natal|ano
+N	pt	Com		certeza
+N	pt	Não sei		o|se|não
+T	fr		Bonjour	Bonjour
+T	fr		Bonjoru	Bonjour
+T	fr	Merci	beaucoip	beaucoup
+T	fr	Comment ça	va	va
+T	fr	Comment	ca	ça
+T	fr	À	demian	demain
+T	fr	Je ne sais	pas	pas
+T	fr	Je ne sais	aps	pas
+T	fr	Bonne	journé	journée
+T	fr	S'il vous	plaut	plaît|plait
+T	fr	J'arrive dans cinq	minites	minutes
+T	fr	C'est	tres	très
+N	fr	Merci		beaucoup
+N	fr	Bonne		journée|soirée|nuit|chance
+N	fr	Comment		ça|vas|allez
+N	fr	À		demain|bientôt|plus
+N	fr	Je ne sais		pas
+N	fr	S'il vous		plaît|plait
+N	fr	Joyeux		anniversaire|Noël
+N	fr	Je suis en		retard|train|route
+N	fr	Il fait		beau|froid|chaud
+N	fr	Qu'est-ce que tu		fais|veux|penses
+T	de		Hallo	Hallo
+T	de		Halol	Hallo
+T	de	Wie	geth	geht
+T	de	Wie geht	es	es
+T	de	Wie geht es	dir	dir
+T	de	Vielen	Dakn	Dank
+T	de	Guten	Morgne	Morgen
+T	de	Ich bin gleich	da	da
+T	de	Bis	morgne	morgen
+T	de	Ich liebe	dcih	dich
+T	de	Alles	Gite	Gute
+T	de	Ich komme	spater	später
+N	de	Vielen		Dank
+N	de	Guten		Morgen|Tag|Abend
+N	de	Wie geht es		dir|Ihnen|euch
+N	de	Ich liebe		dich
+N	de	Bis		morgen|später|bald|dann
+N	de	Alles		Gute|klar
+N	de	Herzlichen		Glückwunsch
+N	de	Ich bin		müde|gleich|da|zu
+N	de	Schönes		Wochenende
+N	de	Gute		Nacht|Besserung
+T	it		Ciao	Ciao
+T	it		Ciap	Ciao
+T	it	Come	stai	stai
+T	it	Come	sati	stai
+T	it	Grazie	mille	mille
+T	it	Grazie	milel	mille
+T	it	Buona	serta	sera
+T	it	Ti voglio	bnee	bene
+T	it	A	domani	domani
+T	it	Arrivo tra cinque	minuit	minuti
+T	it	Che cosa	fsi	fai
+N	it	Grazie		mille|tante
+N	it	Buona		sera|notte|giornata
+N	it	Come		stai|va
+N	it	Ti voglio		bene
+N	it	A		domani|presto
+N	it	Buon		compleanno|giorno|Natale
+N	it	Non lo		so
+N	it	Che cosa		fai|vuoi|è
+N	it	Arrivo tra cinque		minuti
+N	it	Ci vediamo		domani|dopo|presto
+T	uk		Привіт	Привіт
+T	uk		Првіт	Привіт
+T	uk	Як	справи	справи
+T	uk	Як	спарви	справи
+T	uk	Дуже	дякую	дякую
+T	uk	Дуже	дякуб	дякую
+T	uk	До	зустрвчі	зустрічі
+T	uk	Я тебе	кохвю	кохаю
+T	uk	Добрий	день	день
+T	uk	Добрий	вечфр	вечір
+T	uk	Я вже	їду	їду
+T	uk	Я буду через п'ять	хвилм	хвилин
+N	uk	Дуже		дякую|добре
+N	uk	Добрий		день|вечір
+N	uk	Як		справи|ти|ви
+N	uk	Я тебе		кохаю|люблю
+N	uk	До		зустрічі|побачення|завтра
+N	uk	З днем		народження
+N	uk	На все		добре
+N	uk	Я не		знаю|можу
+N	uk	Скоро		буду
+N	uk	Що ти		робиш
+T	tr		Merhaba	Merhaba
+T	tr		Merhana	Merhaba
+T	tr		Nasilsin	Nasılsın
+T	tr	Çok	teşekkürler	teşekkürler
+T	tr	Çok	teşekkürker	teşekkürler
+T	tr	Günaydın, nasıl	gidiyor	gidiyor
+T	tr	Seni	sevoyorum	seviyorum
+T	tr	Yarın	göürşürüz	görüşürüz
+T	tr	Geç	kaldım	kaldım
+T	tr	Geç	kladım	kaldım
+T	tr	İyi	geceker	geceler
+T	tr	Bir şey	değl	değil
+N	tr	Çok		teşekkürler|teşekkür|güzel|iyi
+N	tr	İyi		geceler|günler|akşamlar
+N	tr	Doğum günün		kutlu
+N	tr	Seni		seviyorum
+N	tr	Yarın		görüşürüz
+N	tr	Ne		yapıyorsun|haber
+N	tr	Bir dakika		bekle|lütfen
+N	tr	Kolay		gelsin
+N	tr	Hoş		geldin|geldiniz
+N	tr	Ben de seni		seviyorum|özledim
+T	pl		Cześć	Cześć
+T	pl		Czesc	Cześć
+T	pl	Dziękuję	bardzo	bardzo
+T	pl		Dziekuje	Dziękuję
+T	pl	Do	zibaczenia	zobaczenia
+T	pl	Co	robisz	robisz
+T	pl	Co	robsz	robisz
+T	pl	Jak się	maaz	masz
+T	pl	Kocham	cie	cię
+T	pl	Dzień	dobey	dobry
+T	pl	Będę za pięć	minuy	minut
+N	pl	Dziękuję		bardzo|za
+N	pl	Dzień		dobry
+N	pl	Jak się		masz|czujesz|nazywasz
+N	pl	Kocham		cię|Cię
+N	pl	Do		zobaczenia|jutra|widzenia
+N	pl	Wszystkiego		najlepszego|dobrego
+N	pl	Co		robisz|słychać|to|się
+N	pl	Nie		wiem|ma|mam
+N	pl	Za pięć		minut
+N	pl	Na		razie|pewno
+T	id		Halo	Halo
+T	id		Hslo	Halo
+T	id	Terima	kasih	kasih
+T	id	Terima	kaish	kasih
+T	id	Selamat	pafi	pagi
+T	id	Apa	kabar	kabar
+T	id	Apa	kanar	kabar
+T	id	Aku	sayng	sayang
+T	id	Sampai	jumoa	jumpa
+T	id	Saya sedang di	jaaln	jalan
+T	id	Saya tidak	tahi	tahu
+N	id	Terima		kasih
+N	id	Selamat		pagi|malam|siang|datang|ulang
+N	id	Apa		kabar
+N	id	Sampai		jumpa|nanti
+N	id	Aku		sayang|cinta|tidak|mau
+N	id	Saya tidak		tahu|bisa|mau
+N	id	Selamat ulang		tahun
+N	id	Mohon		maaf
+N	id	Sedang		apa|di
+N	id	Tidak		apa|ada|bisa
+T	hi		नमस्ते	नमस्ते
+T	hi		नमसते	नमस्ते
+T	hi	आप कैसे	हैं	हैं
+T	hi	आप कैसे	हें	हैं
+T	hi	बहुत	धन्यवाद	धन्यवाद
+T	hi	बहुत	धन्यवद	धन्यवाद
+T	hi	मैं ठीक	हूँ	हूँ
+T	hi	मैं ठीक	हू	हूँ|हूं
+T	hi	मुझे नहीं	पता	पता
+T	hi	मुझे नहीं	पत	पता
+T	hi	कल	मिलते	मिलते
+T	hi	कल	मिलटे	मिलते
+N	hi	बहुत		धन्यवाद|अच्छा|बहुत
+N	hi	आप कैसे		हैं|हो
+N	hi	मुझे नहीं		पता|मालूम
+N	hi	मैं ठीक		हूँ|हूं|हु
+N	hi	जन्मदिन की		शुभकामनाएं|बधाई|शुभकामनाएँ|हार्दिक
+N	hi	कल		मिलते|मिलेंगे
+N	hi	क्या		हाल|आप|हुआ
+N	hi	मैं घर		जा|पर|पहुंच|आ
+T	ar		مرحبا	مرحبا
+T	ar		مرحيا	مرحبا
+T	ar	شكرا	جزيلا	جزيلا
+T	ar	شكرا	جزيال	جزيلا
+T	ar	كيف	حالك	حالك
+T	ar	كيف	حاكل	حالك
+T	ar	صباح	الخير	الخير
+T	ar	صباح	الخسر	الخير
+T	ar	إن شاء	الله	الله
+T	ar	إن شاء	اللة	الله
+T	ar	أنا في	الطريق	الطريق
+T	ar	أنا في	الطرسق	الطريق
+N	ar	شكرا		جزيلا|لك|لكم
+N	ar	صباح		الخير|النور
+N	ar	كيف		حالك|الحال|حالكم
+N	ar	إن شاء		الله
+N	ar	مساء		الخير|النور
+N	ar	السلام		عليكم
+N	ar	عيد		مبارك|سعيد|ميلاد
+N	ar	أنا في		الطريق|البيت
+# Korean: words are separated by spaces, but HeliBoard has no Korean dictionary (the model only); Chinese and Japanese are
+# typed through a conversion (pinyin, kana) and have no spaces between words: not checked here (another kind of input)
+N	ko	만나서		반갑습니다|반가워요|반가워
+N	ko	생일		축하해|축하합니다|축하해요
+N	ko	좋은		아침|하루|밤
+N	ko	잘		자|지내|했어|가|자요
+N	ko	지금		어디야|뭐해|가고|집에
+N	ko	내일		봐|만나|보자|만나요

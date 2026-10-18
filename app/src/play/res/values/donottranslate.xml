@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-1: the name of the store version (the launcher, the list of keyboards, the settings) -->
+<resources>
+    <string name="english_ime_name" translatable="false">Gleamvox</string>
+</resources>

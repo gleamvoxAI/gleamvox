@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- play-1 (docs/DECISIONS.md, owner 2026-10-17): the store version "Gleamvox" has no access to photos until Google has
+     reviewed it: the fresh screenshot is off in this build (BuildConfig.AIKB_SCREENSHOT), its permissions, its activity
+     and its provider are removed here. Pictures copied to the clipboard still work (no permission needed). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" tools:node="remove" />
+    <application>
+        <activity android:name="helium314.keyboard.latin.ScreenshotPermissionActivity" tools:node="remove" />
+        <provider android:name="helium314.keyboard.latin.ScreenshotProvider"
+            android:authorities="${applicationId}.screenshot" tools:node="remove" />
+    </application>
+</manifest>

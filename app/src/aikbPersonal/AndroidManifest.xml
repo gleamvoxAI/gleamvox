@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- AI Keyboard personal variant only: AI functions with the user's own OpenAI API key (docs/AI.md).
+     All connections go through AikbNetwork, which checks the "Allow internet access" switch (off by default). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- stage 5g-19: ONNX Runtime (the Silero speech detector) needs Android 7; the keyboard uses it only on Android 9+
+         (the OpenAI voice). Its telemetry provider is removed, no telemetry (CLAUDE.md); the session also turns
+         telemetry off (SileroVad). -->
+    <uses-sdk tools:overrideLibrary="ai.onnxruntime" />
+    <!-- stage 5g-20: pieces of a dictation that wait for the network are sent again the moment it comes back
+         (ConnectivityManager.registerDefaultNetworkCallback needs this; a normal permission, granted at install) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- stage 5g-3, microphone of a Bluetooth headset or car: switched on like for a call, with the audio mode
+         MODE_IN_COMMUNICATION (AudioManager.setMode needs this on every Android version, and startBluetoothSco on
+         Android 9–11; checked in the Android sources). Without the mode the owner's car kept its microphone off.
+         A normal permission granted at install, never asked. Only for a proven headset (docs: VOICE_API.md). -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- stage 5g-21 (a probe of the developer mode, on by default only with a car-like device): a self-managed call of
+         the keyboard, so that the car radio mutes its music at the tap without the SCO link (CarMuteCall). A normal
+         permission, granted at install. -->
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
+    <!-- ai-dict-2: the AI dictionary is downloaded by a foreground service of type dataSync (not cut off when the screen is
+         closed) with a notification (progress, "Stop"). All three are normal permissions granted at install, except
+         POST_NOTIFICATIONS (Android 13+): asked when "Download" is pressed; refused = the download works without it. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <application>
+        <service android:name="helium314.keyboard.latin.ailm.AiDictDownloadService"
+            android:exported="false" android:foregroundServiceType="dataSync" />
+        <provider android:name="ai.onnxruntime.TelemetryInitializer"
+            android:authorities="${applicationId}.onnxruntime_telemetry_initializer" tools:node="remove" />
+        <!-- stage 5g-21: only Telecom may bind it (BIND_TELECOM_CONNECTION_SERVICE) -->
+        <service android:name="helium314.keyboard.latin.voice.AikbCallService"
+            android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telecom.ConnectionService" />
+            </intent-filter>
+        </service>
+    </application>
+    <!-- not a permission: lets the AI screen list the apps with a home screen icon, to choose excluded apps -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+</manifest>

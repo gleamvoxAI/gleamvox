@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AI Keyboard: одноцветный значок для тематических иконок Android 13+ -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M50.00,32.00 Q54.42,53.58 76.00,58.00 Q54.42,62.42 50.00,84.00 Q45.58,62.42 24.00,58.00 Q45.58,53.58 50.00,32.00 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M72.00,27.00 Q73.53,34.47 81.00,36.00 Q73.53,37.53 72.00,45.00 Q70.47,37.53 63.00,36.00 Q70.47,34.47 72.00,27.00 Z"/>
+</vector>

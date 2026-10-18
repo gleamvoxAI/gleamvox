@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<resources>
+    <item type="id" name="voice_input_panel" />
+    <item type="id" name="ai_panel" />
+    <item type="id" name="ai_key" />
+</resources>

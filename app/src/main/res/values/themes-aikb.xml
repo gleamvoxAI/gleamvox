@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AI Keyboard: own flat style (own drawables, own colors). Based on the structure of the Rounded style.
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="KeyboardTheme.Aikb" parent="KeyboardTheme.Rounded_Base_Border">
+        <item name="keyboardStyle">@style/Keyboard.Aikb</item>
+        <item name="keyboardViewStyle">@style/KeyboardView.Aikb</item>
+        <item name="mainKeyboardViewStyle">@style/MainKeyboardView.Aikb</item>
+        <item name="emojiPalettesViewStyle">@style/EmojiPalettesView.Aikb</item>
+        <item name="clipboardHistoryViewStyle">@style/ClipboardHistoryView.Aikb</item>
+    </style>
+
+    <style name="Keyboard.Aikb" parent="Keyboard">
+        <!-- This should be aligned with KeyboardTheme.THEME_ID_* -->
+        <item name="themeId">Aikb</item>
+        <item name="verticalGap">@fraction/aikb_key_vertical_gap</item>
+        <item name="rowHeight">@fraction/aikb_key_row_height</item>
+    </style>
+
+    <style name="KeyboardView.Aikb" parent="KeyboardView.Rounded_Base_Border">
+        <item name="keyLetterSize">@fraction/aikb_key_letter_ratio</item>
+        <item name="keyCapsLetterSize">@fraction/aikb_key_caps_letter_ratio</item>
+        <item name="keyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="spacebarBackground">@drawable/btn_keyboard_key_aikb</item>
+    </style>
+
+    <style name="MainKeyboardView.Aikb" parent="MainKeyboardView.Rounded_Base_Border">
+        <item name="keyLetterSize">@fraction/aikb_key_letter_ratio</item>
+        <item name="keyCapsLetterSize">@fraction/aikb_key_caps_letter_ratio</item>
+        <item name="keyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="spacebarBackground">@drawable/btn_keyboard_key_aikb</item>
+    </style>
+
+    <style name="EmojiPalettesView.Aikb" parent="EmojiPalettesView.Rounded_Base_Border">
+        <item name="keyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="spacebarBackground">@drawable/btn_keyboard_key_aikb</item>
+    </style>
+
+    <style name="ClipboardHistoryView.Aikb" parent="ClipboardHistoryView.Rounded_Base_Border">
+        <item name="keyBackground">@drawable/btn_keyboard_key_aikb</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_aikb</item>
+    </style>
+</resources>

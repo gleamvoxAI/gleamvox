@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AI Keyboard: flat key shape, drawn from scratch. White on purpose: the color comes from the theme (tint).
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Action key (Enter): almost a circle, the radius is clipped to half of the key height. -->
+    <item android:state_active="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+            <corners android:radius="100dp" />
+        </shape>
+    </item>
+    <!-- Keys without background. -->
+    <!-- a shape with fully transparent fill is skipped by the renderer; a plain transparent color would be filled
+         with the key color by the MULTIPLY tint of the theme, which gave the digits row a key background -->
+    <item android:state_empty="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+            <corners android:radius="9dp" />
+        </shape>
+    </item>
+</selector>
