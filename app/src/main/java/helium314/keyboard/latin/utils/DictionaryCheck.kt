@@ -31,6 +31,8 @@ object DictionaryCheck {
                 d.close()
             }
         }
+        // swipe-2: the open glide typing: are the words of the keyboard's dictionaries read (in the keyboard's process)
+        sb.append("Свайп: ").append(helium314.keyboard.latin.glide.OpenGlide.status()).append('\n')
         return sb.toString().trimEnd()
     }
 }

@@ -257,6 +257,8 @@ public final class BinaryDictionary extends Dictionary {
         if (!isValidDictionary()) {
             return null;
         }
+        // swipe-1: the closed library of Google is not there (or not wanted): the open engine answers, never the native gesture code
+        if (composedData.mIsBatchMode && helium314.keyboard.latin.glide.OpenGlide.active()) return new ArrayList<>();
         final DicTraverseSession session = getTraverseSession(sessionId);
         Arrays.fill(session.mInputCodePoints, Constants.NOT_A_CODE);
         ngramContext.outputToArray(session.mPrevWordCodePointArrays,
@@ -403,6 +405,19 @@ public final class BinaryDictionary extends Dictionary {
                 outNgramPrevWordsArray, outNgramPrevWordIsBeginningOfSentenceArray,
                 outNgramTargets, outNgramProbabilityInfo, outShortcutTargets,
                 outShortcutProbabilities);
+    }
+
+    /**
+     * swipe-2: the next word of the dictionary into [outCodePoints] (null-terminated), without its properties: the full
+     * properties read all n-grams of every word, far too slow for the whole dictionary on a phone. 0: no more words.
+     */
+    public int getNextWord(final int token, final int[] outCodePoints) {
+        return getNextWordNative(mNativeDict, token, outCodePoints, new boolean[1]);
+    }
+
+    /** swipe-2: the probability of the word in [codePoints] (exact length), NOT_A_PROBABILITY if it is not there */
+    public int getProbability(final int[] codePoints) {
+        return getProbabilityNative(mNativeDict, codePoints);
     }
 
     public static class GetNextWordPropertyResult {

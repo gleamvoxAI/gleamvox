@@ -49,6 +49,8 @@ public final class ReadOnlyBinaryDictionary extends Dictionary {
             final SettingsValuesForSuggestion settingsValuesForSuggestion,
             final int sessionId, final float weightForLocale,
             final float[] inOutWeightOfLangModelVsSpatialModel) {
+        if (composedData.mIsBatchMode && helium314.keyboard.latin.glide.OpenGlide.active())
+            return helium314.keyboard.latin.glide.OpenGlide.suggest(this, composedData); // swipe-1: no closed library
         if (mLock.readLock().tryLock()) {
             try {
                 return mBinaryDictionary.getSuggestions(composedData, ngramContext,
@@ -59,6 +61,35 @@ public final class ReadOnlyBinaryDictionary extends Dictionary {
             }
         }
         return null;
+    }
+
+    /**
+     * swipe-1: calls [consumer] for every word of the dictionary with its probability (0..255); for the open glide typing.
+     * swipe-2: only the word and its probability (the full word properties made it take minutes on the phone); the read
+     * lock is taken for 500 words at a time, so typing is never held up long.
+     */
+    public void forEachWord(final java.util.function.BiConsumer<String, Integer> consumer) {
+        final int[] codePoints = new int[BinaryDictionary.DICTIONARY_MAX_WORD_LENGTH];
+        int token = 0;
+        do {
+            mLock.readLock().lock();
+            try {
+                if (!mBinaryDictionary.isValidDictionary()) return; // closed meanwhile (e.g. by "Проверка словарей")
+                for (int n = 0; n < 500; n++) {
+                    java.util.Arrays.fill(codePoints, 0);
+                    token = mBinaryDictionary.getNextWord(token, codePoints);
+                    int len = 0;
+                    while (len < codePoints.length && codePoints[len] != 0) len++;
+                    if (len > 0) {
+                        final int probability = mBinaryDictionary.getProbability(java.util.Arrays.copyOf(codePoints, len));
+                        if (probability >= 0) consumer.accept(new String(codePoints, 0, len), probability);
+                    }
+                    if (token == 0) break;
+                }
+            } finally {
+                mLock.readLock().unlock();
+            }
+        } while (token != 0);
     }
 
     @Override

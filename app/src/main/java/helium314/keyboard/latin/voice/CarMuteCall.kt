@@ -40,8 +40,12 @@ object CarMuteCall {
     private const val ACCOUNT_ID = "aikb_dictation"
     private const val NUMBER = "dictation@aikb"
 
-    /** one call of one dictation; times in ms from [start] */
+    /** one call of one dictation (stage 5g-26: of the whole continuous session); times in ms from [start] */
     class Session(val startedAt: Long) {
+        /** stage 5g-26: placed at the touch of the microphone (before the tap) */
+        var fromTouch = false
+        /** stage 5g-26: what ended it ("phrase end", "cancel", "hidden", "watchdog" …) */
+        var endedBy: String? = null
         val events = mutableListOf<String>()
         var activeAt = -1L
         var endedAt = -1L
@@ -54,7 +58,11 @@ object CarMuteCall {
             "call state sent at " + (if (activeAt >= 0) "${activeAt - startedAt} ms" else "never") +
                 ", sco: " + (when (sco) { true -> "yes"; false -> "no"; null -> "?" }) +
                 ", phone level during first 2 s " + (phoneDbfs?.let { "${it.toInt()} dBFS" } ?: "?") +
-                ", call ended at " + (if (endedAt >= 0) "${endedAt - startedAt} ms" else "?")
+                ", call ended at " + (if (endedAt >= 0) "${endedAt - startedAt} ms" else "?") +
+                (endedBy?.let { " by $it" } ?: "") + (if (fromTouch) ", placed at the touch" else "") +
+                // stage 5g-26: what goes to OpenAI: the quiet call mode is raised before sending (Loudness.gainFor)
+                (phoneDbfs?.let { db -> helium314.keyboard.latin.voiceapi.Loudness.gainFor(db).let { g ->
+                    if (g > 1.0) ", sent raised by ${Math.round(20 * kotlin.math.log10(g))} dB to about ${Math.round(db + 20 * kotlin.math.log10(g))} dBFS" else "" } } ?: "")
         fun system(): String = synchronized(this) { events.joinToString("; ") }
     }
 
@@ -88,9 +96,13 @@ object CarMuteCall {
         return s
     }
 
-    /** the phrase is over: the call ends (also if Telecom did not create it yet: it ends at once then) */
-    fun end() {
+    /**
+     * the phrase is over: the call ends (also if Telecom did not create it yet: it ends at once then). Stage 5g-26: once
+     * per call; [by] goes to the journal ("call ended by …")
+     */
+    fun end(by: String = "phrase end") {
         val s = session ?: return
+        if (!s.endRequested) { s.endedBy = by; s.log("call ended by $by") }
         s.endRequested = true
         if (s.endedAt < 0) s.endedAt = System.currentTimeMillis()
         val c = s.connection ?: return
@@ -142,8 +154,16 @@ class AikbCallService : ConnectionService() {
 
         private var endpoints: List<android.telecom.CallEndpoint> = emptyList()
 
+        /** stage 5g-26: the route was pinned to the phone once (before Telecom moves the call to Bluetooth by itself) */
+        private var pinned = false
+
         @RequiresApi(34)
-        override fun onAvailableCallEndpointsChanged(available: MutableList<android.telecom.CallEndpoint>) { endpoints = available.toList() }
+        override fun onAvailableCallEndpointsChanged(available: MutableList<android.telecom.CallEndpoint>) {
+            endpoints = available.toList()
+            // stage 5g-26 (4436: EARPIECE -> BLUETOOTH -> EARPIECE in 300-800 ms, the phone deaf for ~400 ms each time):
+            // the phone's route is asked for as soon as the routes are known, before Telecom picks Bluetooth itself
+            if (!pinned && endpoints.any { it.endpointType == android.telecom.CallEndpoint.TYPE_BLUETOOTH }) { pinned = true; moveOffBluetooth(0) }
+        }
 
         @RequiresApi(34)
         override fun onCallEndpointChanged(endpoint: android.telecom.CallEndpoint) {

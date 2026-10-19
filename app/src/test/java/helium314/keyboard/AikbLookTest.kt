@@ -163,6 +163,26 @@ class AikbLookTest {
 
     private fun micPixel(s: Shot) = s.bitmap.getPixel(s.mic[0] + s.mic[2] / 2, s.mic[1] + (s.mic[3] * 0.15f).toInt())
 
+    /** stage 5g-26: the quiet call pauses the car's music: a car badge instead of the Bluetooth one (the phone records) */
+    @Test fun carPausedBadge() {
+        var panel: VoiceInputView? = null
+        shoot(null, "voice_car_paused", "aikb_dark", voicePanel = { _, p ->
+            p.freezeTime(0f)
+            p.setOpenAi(true)
+            p.setMic(false, false, false)
+            p.update(VoiceState.LISTENING, "", null)
+            p.setCarPaused(true)
+            panel = p
+        })
+        val p = panel!!
+        assertTrue(p.carPausedShown(), "the car badge")
+        assertFalse(p.bluetoothShown(), "no Bluetooth badge: the car's microphone does not record")
+        assertTrue(p.micDescription().contains(latinIME.getString(R.string.voice_car_music_paused)), p.micDescription())
+        p.setCarPaused(false)
+        assertFalse(p.carPausedShown())
+        assertFalse(p.micDescription().contains(latinIME.getString(R.string.voice_car_music_paused)))
+    }
+
     @Test fun aikbStyleIsTheDefault() {
         assertEquals(KeyboardTheme.STYLE_AIKB, Defaults.PREF_THEME_STYLE)
     }

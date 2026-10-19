@@ -17,6 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import helium314.keyboard.latin.R
+import helium314.keyboard.latin.utils.getActivity
+import helium314.keyboard.settings.AppLanguage
+import helium314.keyboard.settings.dialogs.ListPickerDialog
 import helium314.keyboard.latin.ai.AiInvite
 import helium314.keyboard.latin.openai.OpenAiPrefs
 import helium314.keyboard.latin.utils.prefs
@@ -69,6 +72,8 @@ fun MainSettingsScreen(
             Column(
                 Modifier.verticalScroll(rememberScrollState()).then(Modifier.padding(innerPadding))
             ) {
+                // ux-6: the language of the app's screens, first item; named in the languages themselves, so it can be found in any language
+                AppLanguagePreference()
                 // AI Keyboard: invitation and the AI entry at the very top, so the key is easy to paste
                 if (OpenAiPrefs.isAvailable()) {
                     val ctx = LocalContext.current
@@ -128,7 +133,7 @@ fun MainSettingsScreen(
                     onClick = onClickToolbar,
                     icon = R.drawable.ic_settings_toolbar
                 ) { NextScreenIcon() }
-                if (JniUtils.sHaveGestureLib)
+                if (JniUtils.gestureAvailable())
                     Preference(
                         name = stringResource(R.string.settings_screen_gesture),
                         onClick = onClickGestureTyping,
@@ -180,4 +185,29 @@ private fun PreviewScreen() {
             MainSettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
+}
+
+/** ux-6: "🌐 Language of the app", a list of languages by their own names; chosen at once */
+@Composable
+fun AppLanguagePreference() {
+    val ctx = LocalContext.current
+    var dialog by remember { mutableStateOf(false) }
+    val tags = remember { listOf(AppLanguage.SYSTEM) + AppLanguage.availableTags(ctx) }
+    val current = AppLanguage.current(ctx)
+    val systemName = stringResource(R.string.app_language_system)
+    fun name(tag: String) = if (tag == AppLanguage.SYSTEM) systemName else AppLanguage.nativeName(tag)
+    Preference(
+        name = "\uD83C\uDF10 " + stringResource(R.string.app_language_title),
+        description = name(current) + "\n" + stringResource(R.string.app_language_note),
+        onClick = { dialog = true },
+    )
+    if (dialog)
+        ListPickerDialog(
+            onDismissRequest = { dialog = false },
+            items = tags,
+            selectedItem = if (current in tags) current else AppLanguage.SYSTEM,
+            title = { androidx.compose.material3.Text("\uD83C\uDF10 " + stringResource(R.string.app_language_title)) },
+            getItemName = { name(it) },
+            onItemSelected = { tag -> ctx.getActivity()?.let { AppLanguage.set(it, tag) } },
+        )
 }

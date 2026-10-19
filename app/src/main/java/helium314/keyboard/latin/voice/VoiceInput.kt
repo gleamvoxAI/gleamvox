@@ -183,6 +183,13 @@ class VoiceInput @JvmOverloads constructor(
     fun onMicDown(editorInfo: EditorInfo?) {
         if (pre != null || controller.isActive || interruption.isRunning || android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) return
         if (SensitiveInput.isSensitive(editorInfo) || !Settings.getValues().mVoiceInputInternal || !hasPermission() || !screenIsOn()) return
+        // stage 5g-26: a known car: the "quiet call" that pauses its music is placed at the touch already (the radio needs
+        // 0.5-1 s to react, and the route of the call settles before the words begin); it ends if no tap follows
+        if (muteSession?.endRequested != false && android.os.Build.VERSION.SDK_INT >= 26 && CarMuteCall.enabled(ime.prefs()) && knownCarConnected()) {
+            startMuteCall(fromTouch = true)
+            muteTouchPending = true
+            handler.postDelayed(muteGiveUp, PreCapture.GIVE_UP_MS)
+        }
         if (!(VoiceApiPrefs.isAvailable() && engineChoice(editorInfo).openAi)) return
         val prefs = ime.prefs()
         preSourceType = VoiceApiPrefs.audioSource(prefs)
@@ -193,7 +200,29 @@ class VoiceInput @JvmOverloads constructor(
     }
 
     /** the touch was cancelled or slid away from the key */
-    fun onMicTouchCancelled() = discardPre("cancelled")
+    fun onMicTouchCancelled() {
+        discardPre("cancelled")
+        if (muteTouchPending && !controller.isActive) endMuteCall("touch cancelled")
+    }
+
+    /** stage 5g-26: the call placed at the touch waits for the tap; no tap within 2 s: it ends */
+    private var muteTouchPending = false
+    private val muteGiveUp = Runnable { if (muteTouchPending && !controller.isActive) endMuteCall("no tap") }
+
+    /**
+     * stage 5g-26: a Bluetooth device with a call input that is known to be a car (its class says so, or it once gave
+     * speech as a car), and not marked "not a car": the quiet call may be placed at the touch
+     */
+    private fun knownCarConnected(): Boolean = try {
+        val prefs = ime.prefs()
+        ime.getSystemService(android.media.AudioManager::class.java)?.getDevices(android.media.AudioManager.GET_DEVICES_INPUTS).orEmpty().any { d ->
+            if (!AndroidHeadsetMic.isHeadsetWithMicrophone(d.type)) return@any false
+            val dev = helium314.keyboard.latin.voiceapi.AudioDevice(d.type, d.address ?: "")
+            val key = MicRouting.key(dev)
+            !NotCars.has(prefs, key) && (KnownCars.has(prefs, key) ||
+                CarDetect.info(ime, dev.tail, d.productName).let { CarDetect.kind(it.major, it.deviceClass) } == CarDetect.Kind.CAR)
+        }
+    } catch (e: Exception) { false }
 
     private fun discardPre(why: String) {
         handler.removeCallbacks(preGiveUp)
@@ -236,6 +265,9 @@ class VoiceInput @JvmOverloads constructor(
     /** Microphone key. Returns false if the old behaviour (switch to another keyboard with voice) should be used. */
     fun onMicKey(editorInfo: EditorInfo?): Boolean {
         lastField = fieldKey(editorInfo)
+        handler.removeCallbacks(muteGiveUp) // stage 5g-26: the tap came
+        val touchCall = muteTouchPending
+        muteTouchPending = false
         if (interruption.isRunning) { // a recording of before the screen went off is still sent: never two at once
             Log.i(TAG, "microphone key while an interrupted recording is sent")
             return true
@@ -268,11 +300,13 @@ class VoiceInput @JvmOverloads constructor(
                     VoiceState.IDLE -> notStarted(if (screenIsOn()) "unknown" else "screen_off")
                     else -> Unit
                 }
+                if (touchCall && !controller.isActive) endMuteCall("not started")
             }
             MicAction.FALLBACK -> if (!RichInputMethodManager.getInstance().isShortcutImeReady)
                 Toast.makeText(ime, R.string.voice_unavailable, Toast.LENGTH_LONG).show()
             MicAction.NONE -> Unit
         }
+        if (touchCall && action != MicAction.INTERNAL) endMuteCall("not started")
         return action != MicAction.FALLBACK
     }
 
@@ -316,6 +350,7 @@ class VoiceInput @JvmOverloads constructor(
      */
     fun interrupt(reason: Interruption) {
         cleaner.stop()
+        endMuteCall(if (!screenIsOn()) "screen off" else "hidden") // stage 5g-26: the music comes back at once
         screen.release() // stage 5g-20: the keyboard is gone: the normal timeout
         // stage 5g-21: the warm car: the screen off lets it go at once, a hidden keyboard after 10 s
         if (!screenIsOn()) warm.release(CarWarmLink.REASON_SCREEN) else warm.onHidden()
@@ -389,7 +424,7 @@ class VoiceInput @JvmOverloads constructor(
     }
 
     fun destroy() {
-        endMuteCall()
+        endMuteCall("keyboard closed")
         warm.release("keyboard closed")
         screen.release()
         unwatchNetwork()
@@ -531,6 +566,16 @@ class VoiceInput @JvmOverloads constructor(
         val carDevice = routing.carDevice
         val carKey = carDevice?.let { MicRouting.key(it) }
         carPlan = MicRouting.carPlan(carDevice != null, continuous)
+        // stage 5g-26 (4436: the warm link after a phrase made the music come back and the "call" come again and hang):
+        // where the quiet call is used there is no warm link and no car in a pause: the phone records the whole session,
+        // one call from the touch to the end
+        val muteWanted = carDevice != null && CarMuteCall.enabled(prefs) && android.os.Build.VERSION.SDK_INT >= 26
+        if (!muteWanted && muteSession != null) endMuteCall("no car at the tap")
+        if (muteWanted) {
+            warm.release("quiet call used")
+            carPlan = MicRouting.CarPlan.PHONE_ONLY
+            if (muteSession?.endRequested != false) startMuteCall(fromTouch = false) // at once, not at the first frame
+        }
         // stage 5g-21: the car's link is warm (a phrase a moment ago): the car records at once, the probation as in 5g-20;
         // stage 5g-22: only if the link is really up (it went down when the car connected its media in 4401)
         if (carKey != null && warm.isWarm(carKey)) {
@@ -547,7 +592,7 @@ class VoiceInput @JvmOverloads constructor(
         }
         // stage 5g-21, owner's addition 2: the probe "mute the radio with a call" (a self-managed call, no SCO);
         // stage 5g-22: it starts once the phone records (the first frame), so the first words never depend on it
-        mutePending = CarMuteCall.shouldStart(carDevice != null, false, CarMuteCall.enabled(prefs))
+        mutePending = false // stage 5g-26: placed above (at the touch or at once), never at the first frame
         if (carPlan == MicRouting.CarPlan.PHONE_ONLY) {
             attempt?.car = (attempt?.car?.let { "$it; " } ?: "") + "single phrase phone only"
             carDevice?.let { d -> snap.inputInfo(d)?.let { warmCandidate = it to carKey!! } }
@@ -874,7 +919,7 @@ class VoiceInput @JvmOverloads constructor(
                 if (headsetCar) KnownCars.add(ime.prefs(), headsetKey)
             }
             // stage 5g-20: the car is asked for in a pause: the dimmed badge "connecting the car"
-            VoiceTrace.HeadsetAsked -> { micConnecting = true; panel?.setBluetoothConnecting(true, headsetCar); endMuteCall() }
+            VoiceTrace.HeadsetAsked -> { micConnecting = true; panel?.setBluetoothConnecting(true, headsetCar); endMuteCall("car asked for") }
             else -> Unit
         }
         val a = attempt ?: return
@@ -1065,7 +1110,7 @@ class VoiceInput @JvmOverloads constructor(
             attempt?.let { takeFocus(it) }
             focus.acquire()
         } else {
-            endMuteCall() // stage 5g-21: the phrase is recorded: the probe's call ends
+            endMuteCall(when (state) { VoiceState.ERROR -> "error"; VoiceState.IDLE -> "cancel"; else -> "phrase end" }) // stage 5g-21: the phrase is recorded: the call ends
             if (focus.held) resumeAttempt = attempt // the music check comes 0.8 s later, often after the entry was written
             focus.release()
         }
@@ -1113,6 +1158,7 @@ class VoiceInput @JvmOverloads constructor(
                 p.setJournalAllowed(helium314.keyboard.latin.ai.DeveloperMode.on(ime.prefs()))
                 p.setMic(micHeadset, micFellBack, micMissing)
                 p.setBluetoothConnecting(micConnecting, headsetCar)
+                p.setCarPaused(muteSession?.let { !it.endRequested } == true) // stage 5g-26: "🚗 music paused" while the call holds
                 p.setNotice(notice, noticeSwitched)
                 p.setSignal(signalPeak, signalSource)
                 p.update(state, partial, error)
@@ -1220,10 +1266,14 @@ class VoiceInput @JvmOverloads constructor(
     /** stage 5g-22: the recorder of this dictation until it is in the journal (activeRecorder goes at DONE already) */
     private var lastRecorder: PcmRecorder? = null
 
-    private fun startMuteCall() {
+    private fun startMuteCall(fromTouch: Boolean = false) {
         if (android.os.Build.VERSION.SDK_INT < 26) return
         val s = CarMuteCall.start(ime)
+        s.fromTouch = fromTouch
         muteSession = s
+        panel?.setCarPaused(true)
+        handler.removeCallbacks(muteWatchdog)
+        handler.postDelayed(muteWatchdog, WATCHDOG_MS)
         // does Android bring up SCO for the call by itself? (then the phone goes deaf as before)
         for (at in longArrayOf(500, 1_000, 2_000)) handler.postDelayed({
             val am = ime.getSystemService(android.media.AudioManager::class.java)
@@ -1261,10 +1311,28 @@ class VoiceInput @JvmOverloads constructor(
         }, at)
     }
 
-    /** the phrase is over (or the car is asked for in a pause): the call of the probe ends */
-    private fun endMuteCall() {
-        if (muteSession == null) return
-        CarMuteCall.end()
+    /** the phrase is over (or the car is asked for in a pause): the call ends, once ([by] goes to the journal) */
+    private fun endMuteCall(by: String) {
+        val s = muteSession ?: return
+        handler.removeCallbacks(muteGiveUp); muteTouchPending = false
+        panel?.setCarPaused(false)
+        if (s.endRequested) return
+        CarMuteCall.end(by)
+    }
+
+    /**
+     * stage 5g-26: a call never hangs: every second, a call with no dictation running (and no tap awaited) ends; a call
+     * never lasts longer than [MAX_CALL_MS]
+     */
+    private val muteWatchdog = object : Runnable {
+        override fun run() {
+            val s = muteSession ?: return
+            if (s.endRequested) return
+            val idle = !controller.isActive && !muteTouchPending && !interruption.isRunning
+            if (idle) { endMuteCall("watchdog"); return }
+            if (System.currentTimeMillis() - s.startedAt > MAX_CALL_MS) { endMuteCall("watchdog (too long)"); return }
+            handler.postDelayed(this, WATCHDOG_MS)
+        }
     }
 
     /**
@@ -1276,8 +1344,10 @@ class VoiceInput @JvmOverloads constructor(
         mutePending = false
         val rec = lastRecorder
         lastRecorder = null
+        handler.removeCallbacks(muteWatchdog)
+        panel?.setCarPaused(false)
         muteSession?.let { m ->
-            CarMuteCall.end()
+            CarMuteCall.end("phrase end")
             a?.carMute = m.summary(rec?.earlyPeakDbfs)
             a?.carMuteSystem = m.system()
             CarMuteCall.clear()
@@ -1291,7 +1361,8 @@ class VoiceInput @JvmOverloads constructor(
             val rejected = r != null && (r.headsetRejected || r.headsetFellBack)
             if (inserted && !rejected) { warmAttempt = a; a?.let { it.car = (it.car ?: "") + "; held again" } }
             warm.endUse(inserted && !rejected, if (rejected) CarWarmLink.REASON_REJECTED else "no text")
-        } else if (CarWarmLink.shouldWarm(carPlan, false, inserted, holdMs) && !continuousOn) {
+        } else if (CarWarmLink.shouldWarm(carPlan, false, inserted, holdMs) && !continuousOn &&
+            !(CarMuteCall.enabled(ime.prefs()) && android.os.Build.VERSION.SDK_INT >= 26)) { // stage 5g-26: the quiet call instead
             val (info, key) = warmCandidate ?: return
             val car = AndroidHeadsetMic(ime, info, modeAfterLink = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
             if (warm.warmUp(car, key, holdMs)) {
@@ -1357,6 +1428,9 @@ class VoiceInput @JvmOverloads constructor(
     }
 
     companion object {
+        /** stage 5g-26: the watchdog of the quiet call looks every second; a call never lasts longer than 30 min */
+        const val WATCHDOG_MS = 1_000L
+        const val MAX_CALL_MS = 30 * 60_000L
         private const val CONTEXT_CHARS = 50 // stage 5g-17: text around the cursor looked at for the case of the dictated text
         private const val TAG = "VoiceInput"
         /** stage 5g-18: taps with a car-like device so far: the order of the probed sources and of the link */

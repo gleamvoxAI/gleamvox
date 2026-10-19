@@ -76,6 +76,9 @@ open class SettingsActivity : ComponentActivity(), SharedPreferences.OnSharedPre
     private val crashReportFiles = MutableStateFlow<List<File>>(emptyList())
     private var paused = true
 
+    // ux-6: the language chosen in the settings (Android older than 13; newer Android applies it by itself)
+    override fun attachBaseContext(newBase: android.content.Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

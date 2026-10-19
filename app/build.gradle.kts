@@ -253,6 +253,12 @@ android {
         lint { checkReleaseBuilds = false }
     }
 
+    // play-4: only for tools/aikb/build.sh shots: the debug unit tests (the only ones AGP makes) draw the keyboard with the
+    // names and strings of the store version: the debug names (src/debug/res/values/strings.xml) are replaced by those of
+    // src/play/res, the other two debug files are copied by build.sh shots to build/aikb-store-res
+    if ((findProperty("aikbStoreShots") as String?).isNullOrEmpty().not())
+        sourceSets["debug"].res.setSrcDirs(listOf("src/play/res", "build/aikb-store-res"))
+
     // Debug APKs are packaged incrementally, i.e. on top of the previous APK, which leaves dead (unreferenced) bytes
     // of the previous variant inside the file. The variant name is an input of the packaging task, so switching
     // between personal and release makes Gradle repackage from scratch and release never carries personal leftovers.
@@ -313,6 +319,8 @@ android {
                 it.forkEvery = 10
                 // ai-dict-1: the comparison of language models runs only from tools/aikb/build.sh lmeval
                 it.systemProperty("aikb.lmEval", (project.findProperty("aikbLmEval") as String?) ?: "")
+                // play-4: the store pictures are drawn only from tools/aikb/build.sh shots (StoreShotsTest)
+                it.systemProperty("aikb.storeShots", (project.findProperty("aikbStoreShots") as String?) ?: "")
             }
         }
     }

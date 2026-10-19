@@ -112,6 +112,11 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
             android:theme="@style/TransparentActivityTheme" android:excludeFromRecents="true" android:noHistory="true"
             android:taskAffinity=""/>
 
+        <!-- ux-7: only shows the system Photo Picker (no access to photos needed) -->
+        <activity android:name="helium314.keyboard.latin.PhotoPickActivity" android:exported="false"
+            android:theme="@style/TransparentActivityTheme" android:excludeFromRecents="true" android:noHistory="true"
+            android:taskAffinity=""/>
+
         <!-- Broadcast receivers -->
         <receiver android:name="SystemBroadcastReceiver"
                 android:exported="true">

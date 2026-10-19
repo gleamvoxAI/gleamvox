@@ -1689,6 +1689,8 @@ New dictionary:
     <string name="voice_continuous_limit">Longest dictation: %d min</string>
     <!-- stage 5g: microphone of a Bluetooth headset -->
     <string name="voice_mic_bluetooth_desc">Recording from the Bluetooth headset</string>
+    <!-- stage 5g-26: the quiet call holds the car's music paused -->
+    <string name="voice_car_music_paused">Music in the car is paused</string>
     <string name="voice_mic_headset_missing">No headset connected: the phone microphone records</string>
     <string name="voice_mic_choice_title">Microphone for voice</string>
     <string name="voice_mic_choice_auto">Auto (the headset when connected)</string>
@@ -1799,4 +1801,15 @@ New dictionary:
     <string name="about_gleamvox_site">Website and privacy policy</string>
     <string name="about_gleamvox_site_description">gleamvox.com</string>
     <string name="word_saved">Saved “%1$s”</string>
+    <!-- swipe-1: only in the personal version, where the library of Google is there too -->
+    <string name="open_glide">Open glide engine</string>
+    <string name="open_glide_summary">Use the keyboard\'s own glide typing instead of the library of Google (to compare the two)</string>
+    <!-- ux-6: the language of the app's screens -->
+    <string name="app_language_title">App language / Язык интерфейса</string>
+    <string name="app_language_system">As in the system</string>
+    <string name="app_language_note">Changes only the language of the app\'s screens. Keyboard languages and layouts are in \"Languages &amp; Layouts\".</string>
+    <!-- ux-7: a picture chosen in the system Photo Picker -->
+    <string name="photo_pick_button">📷 Screenshot or photo</string>
+    <string name="photo_pick_not_accepted">This field does not take pictures</string>
+    <string name="photo_pick_failed">Could not take the picture</string>
 </resources>

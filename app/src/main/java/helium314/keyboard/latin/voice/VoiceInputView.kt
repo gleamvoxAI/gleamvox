@@ -416,7 +416,8 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
     private fun updateDescription() {
         art.contentDescription = labelContext.getString(if (lastState == VoiceState.ERROR) R.string.voice_retry else R.string.voice_finish_desc) +
             ". " + labelContext.getString(if (openAi) R.string.mic_desc_ai else R.string.mic_desc_system) +
-            (if (art.bluetooth && !art.bluetoothDim) ". " + labelContext.getString(R.string.voice_mic_bluetooth_desc) else "")
+            (if (art.bluetooth && !art.bluetoothDim) ". " + labelContext.getString(R.string.voice_mic_bluetooth_desc) else "") +
+            (if (art.carPaused && !art.bluetooth) ". " + labelContext.getString(R.string.voice_car_music_paused) else "")
     }
 
     /** the real sound level of the microphone, 0..1 */
@@ -436,6 +437,18 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
     fun bluetoothShown() = art.bluetooth
     /** for tests: the badge is dimmed, "connecting" (stage 5g-5) */
     fun bluetoothConnecting() = art.bluetooth && art.bluetoothDim
+
+    /**
+     * stage 5g-26: the "quiet call" holds the car's music paused: a small car badge at the lower left of the circle
+     * instead of the Bluetooth one (that one means the car's microphone records, which it does not now)
+     */
+    fun setCarPaused(on: Boolean) {
+        if (art.carPaused == on) return
+        art.carPaused = on
+        updateDescription()
+    }
+    /** for tests */
+    fun carPausedShown() = art.carPaused && !art.bluetooth
 
     /** stage 5g-5: proven earbuds are being asked for: a dimmed badge at once, bright when they give sound */
     private var btConnecting = false
@@ -567,6 +580,23 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
         var bluetoothDim = false
             set(value) { if (field != value) { field = value; invalidate() } }
         private val btPath = android.graphics.Path()
+        /** stage 5g-26: the car's music is paused by the quiet call */
+        var carPaused = false
+            set(value) { if (field != value) { field = value; invalidate() } }
+
+        /** a small round badge with a car in the panel color ring, at the lower left of the circle */
+        private fun drawCar(canvas: Canvas, x: Float, y: Float, r: Float) {
+            paint.style = Paint.Style.FILL
+            paint.color = palette.background
+            canvas.drawCircle(x, y, r + max(1f, r * 0.15f), paint)
+            paint.color = palette.key
+            canvas.drawCircle(x, y, r, paint)
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = r * 1.15f
+            paint.color = palette.text
+            val fm = paint.fontMetrics
+            canvas.drawText("\uD83D\uDE97", x, y - (fm.ascent + fm.descent) / 2, paint)
+        }
         val isPulsing get() = state == VoiceState.LISTENING || state == VoiceState.PROCESSING
         private val tick = object : Runnable {
             override fun run() {
@@ -683,6 +713,7 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
             paint.color = circleColor
             canvas.drawCircle(cx, cy, s.size(120f), paint)
             if (bluetooth) drawBluetooth(canvas, cx + s.size(BT_BADGE_OFFSET), cy + s.size(BT_BADGE_OFFSET), s.size(BT_BADGE_RADIUS))
+            else if (carPaused && state == VoiceState.LISTENING) drawCar(canvas, cx - s.size(BT_BADGE_OFFSET), cy + s.size(BT_BADGE_OFFSET), s.size(BT_BADGE_RADIUS))
             icon?.let {
                 val h = s.size(120f)
                 val w = h * it.intrinsicWidth / max(1, it.intrinsicHeight)

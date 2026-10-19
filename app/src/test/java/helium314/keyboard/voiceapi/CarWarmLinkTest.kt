@@ -196,6 +196,14 @@ class CarWarmLinkTest {
         assertEquals("call state sent at never, sco: ?, phone level during first 2 s ?, call ended at ?", helium314.keyboard.latin.voice.CarMuteCall.Session(0).summary(null))
     }
 
+    /** stage 5g-26: the journal says what ended the call, that it was placed at the touch and how loud it was sent */
+    @Test fun quietCallJournal() {
+        val session = helium314.keyboard.latin.voice.CarMuteCall.Session(1_000)
+        session.activeAt = 1_120; session.sco = false; session.endedAt = 4_000; session.endedBy = "hidden"; session.fromTouch = true
+        assertEquals("call state sent at 120 ms, sco: no, phone level during first 2 s -30 dBFS, call ended at 3000 ms by hidden, " +
+            "placed at the touch, sent raised by 27 dB to about -3 dBFS", session.summary(-30.0))
+    }
+
     // ---- stage 5g-22: the check of 4401 in the car ----
 
     private val sco = android.media.AudioDeviceInfo.TYPE_BLUETOOTH_SCO

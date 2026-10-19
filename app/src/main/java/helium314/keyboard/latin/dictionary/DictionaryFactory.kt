@@ -95,6 +95,10 @@ object DictionaryFactory {
         )
 
         if (readOnlyBinaryDictionary.isValidDictionary) {
+            // swipe-2: the words for the open glide typing are read in the background right away, not at the first glide
+            if (dictType == Dictionary.TYPE_MAIN && helium314.keyboard.latin.glide.OpenGlide.active() &&
+                    helium314.keyboard.latin.settings.Settings.getValues()?.mGestureInputEnabled != false)
+                helium314.keyboard.latin.glide.OpenGlide.warmUp(readOnlyBinaryDictionary)
             if (locale.language == "ko") {
                 // Use KoreanDictionary for Korean locale
                 return KoreanDictionary(readOnlyBinaryDictionary)

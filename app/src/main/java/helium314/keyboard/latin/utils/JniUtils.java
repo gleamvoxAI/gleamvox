@@ -40,6 +40,8 @@ public final class JniUtils {
     }
 
     public static boolean sHaveGestureLib = false;
+    /** swipe-1: glide typing works: with the library of Google or with the open engine (helium314.keyboard.latin.glide) */
+    public static boolean gestureAvailable() { return true; }
     /** play-2: did the built-in or the Google library load, and the error if not (shown by "Проверка словарей" in About) */
     public static volatile boolean sNativeLoaded = false;
     public static volatile String sNativeError = "";

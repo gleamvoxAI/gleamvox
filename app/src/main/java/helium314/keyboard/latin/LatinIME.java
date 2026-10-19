@@ -822,6 +822,8 @@ public class LatinIME extends InputMethodService implements
     @Override
     public void onStartInputView(final EditorInfo editorInfo, final boolean restarting) {
         mHandler.onStartInputView(editorInfo, restarting);
+        PhotoPick.INSTANCE.setKeyboard(this); // ux-7: a picture chosen in the Photo Picker goes into the field that is shown now
+        if (PhotoPick.INSTANCE.getPending() != null) PhotoPick.INSTANCE.consumeLater();
         if (mVoiceInput != null) mVoiceInput.onInputViewStarted(editorInfo);
         if (mAiAssist != null) mAiAssist.onInputViewStarted(editorInfo);
         if (mVoiceInput != null) mVoiceInput.updateMicKey(editorInfo);

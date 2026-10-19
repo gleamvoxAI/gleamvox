@@ -101,6 +101,19 @@ class ClipboardHistoryView @JvmOverloads constructor(
             placeholderView = this@ClipboardHistoryView.placeholderView
         }
         val clipboardStrip = KeyboardSwitcher.getInstance().clipboardStrip
+        // ux-7: the store version has no access to photos: a picture comes through the system Photo Picker instead
+        if (!helium314.keyboard.latin.BuildConfig.AIKB_SCREENSHOT) {
+            val button = TextView(context).apply {
+                text = context.getString(R.string.photo_pick_button)
+                gravity = android.view.Gravity.CENTER
+                setPadding(32, 0, 32, 0)
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
+                setOnClickListener { helium314.keyboard.latin.PhotoPick.start(context) }
+            }
+            clipboardStrip.addView(button)
+            button.setTextColor(colors.get(ColorType.TOOL_BAR_KEY))
+            colors.setBackground(button, ColorType.STRIP_BACKGROUND)
+        }
         toolbarKeys.forEach {
             clipboardStrip.addView(it)
             it.setOnClickListener(this@ClipboardHistoryView)
