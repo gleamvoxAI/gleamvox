@@ -15,6 +15,9 @@ AI Keyboard построена на основе HeliBoard. Этот файл п
 | Английский (США) экспериментальный словарь `main_en_us__experimental` (assets/dicts/main_en-US.dict) | Списки слов Leipzig Corpora Collection (Wortschatz) под CC BY 4.0 | Play-2. Те же условия; источник проверен по wordlists/main_en_US__experimental.source (прежняя пометка «не проверено» снята). Входит в personal и в магазинную версию. |
 | Словари эмодзи `emoji_ru`, `emoji_en` (emoji_cldr_signal) | Unicode License v3 (данные CLDR) и AGPL-3.0 (поисковый индекс эмодзи Signal, автор eranl) | Play-2. Данные, не код. GPL-3.0 §13 разрешает объединять работу с AGPL-3.0; исходники приложения публикуются (GPL-3.0), словари берутся из проекта aosp-dictionaries с теми же лицензиями. Источники: github.com/unicode-org/cldr-json, github.com/signalapp/emoji-search-index. Входят в personal и в магазинную версию. |
 
+## Данные для настройки (не входят ни в одну сборку)
+- Параметры открытого свайпа (`app/src/main/java/helium314/keyboard/latin/glide/GlideMatcher.kt`, `GlideParams`) подобраны на жестах набора FUTO Swipe dataset (swipe.futo.org, https://huggingface.co/datasets/futo-org/swipe.futo.org), Copyright (c) 2025 FUTO, лицензия MIT. Сам набор в проект и в сборки не входит; модели FUTO не используются.
+
 ## Только сборка personal (для телефона владельца, не распространять)
 
 | Компонент | Лицензия | Примечание |

@@ -40,6 +40,8 @@ class TapOnlySuggestionsTest {
         "short message" to (text or noSug or InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE),
         "filter" to (text or noSug or InputType.TYPE_TEXT_VARIATION_FILTER),
         "name" to (text or noSug or InputType.TYPE_TEXT_VARIATION_PERSON_NAME),
+        // ux-8: the address / search bar of Chrome and Google: ordinary words are typed there
+        "address and search bar" to (text or noSug or InputType.TYPE_TEXT_VARIATION_URI),
     )
     private val neverTypes = mapOf(
         "password" to (text or noSug or InputType.TYPE_TEXT_VARIATION_PASSWORD),
@@ -48,7 +50,6 @@ class TapOnlySuggestionsTest {
         "number password" to (InputType.TYPE_CLASS_NUMBER or noSug or InputType.TYPE_NUMBER_VARIATION_PASSWORD),
         "e-mail" to (text or noSug or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS),
         "web e-mail" to (text or noSug or InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS),
-        "address bar" to (text or noSug or InputType.TYPE_TEXT_VARIATION_URI),
         "web field" to (text or noSug or InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT),
         "number" to (InputType.TYPE_CLASS_NUMBER or noSug),
         "phone" to (InputType.TYPE_CLASS_PHONE or noSug),
@@ -106,5 +107,21 @@ class TapOnlySuggestionsTest {
         prefs.edit { putBoolean(Settings.PREF_ALWAYS_SHOW_SUGGESTIONS, true) }
         assertTrue(autoCorrectIn(text or noSug), "fallback: full auto-correction")
         assertEquals(true, Settings.getValues().mSuggestionsEnabled)
+    }
+
+    /** ux-8: the address bar never auto-corrects; only ordinary words are learned there, never addresses or e-mails */
+    @Test fun addressBarSuggestsByTapAndLearnsOnlyWords() {
+        RichInputMethodManager.init(latinIME)
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTO_CORRECTION, true); putBoolean(Settings.PREF_MORE_AUTO_CORRECTION, true); putBoolean(Settings.PREF_ALWAYS_SHOW_SUGGESTIONS, false) }
+        val uri = text or InputType.TYPE_TEXT_VARIATION_URI
+        assertFalse(autoCorrectIn(uri or noSug), "with the no-suggestions flag")
+        assertFalse(autoCorrectIn(uri), "without it")
+        assertTrue(attrs(uri).mShouldShowSuggestions)
+        assertTrue(InputAttributes.mayLearnInAddressBar(uri, "привет"))
+        assertTrue(InputAttributes.mayLearnInAddressBar(uri, "weather"))
+        for (w in listOf("google.com", "https://x", "a/b", "me@mail.ru", "localhost:8080"))
+            assertFalse(InputAttributes.mayLearnInAddressBar(uri, w), w)
+        assertTrue(InputAttributes.mayLearnInAddressBar(text, "file.txt"), "other fields are not changed")
+        assertFalse(attrs(uri or noSug, EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING).mShouldShowSuggestions, "incognito tab: nothing")
     }
 }

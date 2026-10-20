@@ -54,6 +54,8 @@ class ClipboardHistoryView @JvmOverloads constructor(
 
     private lateinit var clipboardRecyclerView: ClipboardHistoryRecyclerView
     private lateinit var placeholderView: TextView
+    /** ux-9: "📷 Insert a screenshot or photo" above the list (store version only) */
+    private var pickButton: TextView? = null
     private val toolbarKeys = mutableListOf<ImageButton>()
     private lateinit var clipboardAdapter: ClipboardAdapter
 
@@ -101,18 +103,23 @@ class ClipboardHistoryView @JvmOverloads constructor(
             placeholderView = this@ClipboardHistoryView.placeholderView
         }
         val clipboardStrip = KeyboardSwitcher.getInstance().clipboardStrip
-        // ux-7: the store version has no access to photos: a picture comes through the system Photo Picker instead
+        // ux-7: the store version has no access to photos: a picture comes through the system Photo Picker instead;
+        // ux-9 (4445: the button was hidden in the scrolling strip): a row of its own above the list, always visible
         if (!helium314.keyboard.latin.BuildConfig.AIKB_SCREENSHOT) {
+            val d = resources.displayMetrics.density
             val button = TextView(context).apply {
-                text = context.getString(R.string.photo_pick_button)
+                text = context.getString(R.string.photo_pick_panel)
                 gravity = android.view.Gravity.CENTER
-                setPadding(32, 0, 32, 0)
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
+                minHeight = (44 * d).toInt()
+                setPadding((16 * d).toInt(), (6 * d).toInt(), (16 * d).toInt(), (6 * d).toInt())
                 setOnClickListener { helium314.keyboard.latin.PhotoPick.start(context) }
             }
-            clipboardStrip.addView(button)
-            button.setTextColor(colors.get(ColorType.TOOL_BAR_KEY))
-            colors.setBackground(button, ColorType.STRIP_BACKGROUND)
+            addView(button, 0, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                setMargins((8 * d).toInt(), (6 * d).toInt(), (8 * d).toInt(), (2 * d).toInt())
+            })
+            pickButton = button
+            // the empty clipboard: what the button does, instead of "¯\_(ツ)_/¯"
+            placeholderView.text = context.getString(R.string.photo_pick_recent_first)
         }
         toolbarKeys.forEach {
             clipboardStrip.addView(it)
@@ -176,7 +183,15 @@ class ClipboardHistoryView @JvmOverloads constructor(
         placeholderView.apply {
             KeyboardTypeface.applyToTextView(this)
             setTextColor(params.mTextColor)
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, params.mLabelSize.toFloat() * 2)
+            // ux-9: a short line under the picture button (store version), else the big shrug
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, params.mLabelSize.toFloat() * (if (pickButton != null) 1 else 2))
+        }
+        pickButton?.apply {
+            KeyboardTypeface.applyToTextView(this)
+            setBackgroundResource(keyBackgroundId)
+            Settings.getValues().mColors.setBackground(this, ColorType.KEY_BACKGROUND)
+            setTextColor(params.mTextColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, params.mLabelSize.toFloat())
         }
         clipboardRecyclerView.apply {
             adapter = clipboardAdapter

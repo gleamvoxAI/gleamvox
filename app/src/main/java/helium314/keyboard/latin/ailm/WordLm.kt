@@ -11,6 +11,8 @@ interface WordModel {
     fun wordLogProbs(context: String, words: List<String>): DoubleArray
     /** up to [count] likely next words after [context], best first, with their log-probabilities */
     fun nextWords(context: String, count: Int): List<Pair<String, Double>>
+    /** ai-dict-3: computes the state of [context] ahead (the next request with it only scores the candidates) */
+    fun prepare(context: String) {}
 }
 
 class WordLm(private val tok: BpeTokenizer, private val lm: OnnxLm) : WordModel {
@@ -55,6 +57,8 @@ class WordLm(private val tok: BpeTokenizer, private val lm: OnnxLm) : WordModel 
         for (i in lp.indices) if (endsWord[i]) s += Math.exp(lp[i].toDouble())
         return Math.log(s.coerceAtLeast(1e-12))
     }
+
+    override fun prepare(context: String) { lm.state(contextTokens(context)) }
 
     override fun wordLogProbs(context: String, words: List<String>): DoubleArray {
         val ctx = lm.state(contextTokens(context))

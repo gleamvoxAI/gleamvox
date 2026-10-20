@@ -99,23 +99,39 @@ class GlideMatcherTest {
         val entries = f.readLines().mapNotNull { l -> l.split('\t').takeIf { it.size == 2 }?.let { it[0] to (it[1].toIntOrNull() ?: 0) } }
             .filter { it.first.length in 2..24 && it.first.all { c -> c.isLetter() || c == '\'' || c == '-' } && it.second > 0 }
             .distinctBy { it.first.lowercase() }
+        val tIndex = System.nanoTime()
         val index = GlideIndex(entries.map { it.first }.toTypedArray(), ByteArray(entries.size) { entries[it].second.coerceIn(0, 255).toByte() })
+        val indexMs = (System.nanoTime() - tIndex) / 1_000_000
         // the wanted words: the common ones (probability >= 150), at least 3 letters
         val wanted = entries.filter { it.second >= 150 && GlideMatcher.fold(it.first).size >= 3 && it.first.all { c -> c.isLetter() } && it.first == it.first.lowercase() }
         val rnd = Random(7)
         val sample = wanted.shuffled(rnd).take(500)
         var top1 = 0; var top3 = 0; var n = 0; var ms = 0L
+        val tails = ArrayList<Double>(); val updates = ArrayList<Double>()
         for ((w, _) in sample) {
             val p = simulate(w, keys, rnd) ?: continue
+            // swipe-3: the keyboard also asks during the glide (with the path so far)
+            for (part in listOf(3, 2)) {
+                val k = p.xs.size * (part - 1) / part
+                val tu = System.nanoTime()
+                GlideMatcher.match(p.xs, p.ys, k, keys, index)
+                updates.add((System.nanoTime() - tu) / 1e6)
+            }
             val t = System.nanoTime()
             val r = GlideMatcher.match(p.xs, p.ys, p.xs.size, keys, index).map { it.word.lowercase() }
-            ms += (System.nanoTime() - t) / 1_000_000
+            val took = (System.nanoTime() - t) / 1e6
+            tails.add(took); ms += took.toLong()
             n++
             if (r.firstOrNull() == w) top1++
             if (w in r.take(3)) top3++
         }
-        println("GLIDE $name: ${entries.size} words in the index, $n glides: first ${100 * top1 / n}%, in the first three ${100 * top3 / n}%, ${ms / n} ms per glide")
+        tails.sort(); updates.sort()
+        fun q(l: List<Double>, f: Double) = "%.1f".format(l[((l.size - 1) * f).toInt()])
+        println("GLIDE $name: ${entries.size} words in the index (prepared in $indexMs ms), $n glides: first ${100 * top1 / n}%, in the first three ${100 * top3 / n}%; " +
+            "after lifting the finger: median ${q(tails, 0.5)} ms, 90% ${q(tails, 0.9)} ms, max ${q(tails, 1.0)} ms; during the glide: median ${q(updates, 0.5)} ms, max ${q(updates, 1.0)} ms")
         assertTrue(top1.toDouble() / n >= minTop1, "$name first $top1/$n")
+        // swipe-3: fast enough for the phone (it is a few times slower than this server): 90 % of the glides within 30 ms here
+        assertTrue(tails[((tails.size - 1) * 0.9).toInt()] < 30.0, "$name: 90 % of the glides ${tails[((tails.size - 1) * 0.9).toInt()]} ms")
         assertTrue(top3.toDouble() / n >= minTop3, "$name first three $top3/$n")
     }
 

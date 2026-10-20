@@ -56,7 +56,8 @@ class ClipboardHistoryManager(
             fetchPrimaryClip()
         // stage 5g-16: only the time of a change in the gallery is noted; a new screenshot shows up while the keyboard is open
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
-        if (FreshScreenshot.inBuild()) mediaObserver = ScreenshotWatch.register(latinIME, handler) {}
+        // ux-9: also in the store version: only the time of a change is known (no permission, nothing is read)
+        mediaObserver = ScreenshotWatch.register(latinIME, handler) {}
         ScreenshotWatch.onRefresh = { if (latinIME.isInputViewShown) latinIME.tryShowClipboardSuggestion() }
     }
 
@@ -202,7 +203,7 @@ class ClipboardHistoryManager(
 
         shownScreenshot = null
         if (parent == null) return null
-        return clipSuggestionView(editorInfo, parent) ?: screenshotSuggestionView(editorInfo, parent) ?: aiDictOfferView(editorInfo, parent)
+        return clipSuggestionView(editorInfo, parent) ?: screenshotSuggestionView(editorInfo, parent) ?: pickCardView(editorInfo, parent) ?: aiDictOfferView(editorInfo, parent)
     }
 
     /**
@@ -236,6 +237,25 @@ class ClipboardHistoryManager(
                     .setAction(helium314.keyboard.settings.SettingsActivity.ACTION_OPEN_AI_DICT)
                     .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP))
             } catch (e: Exception) { Log.w(TAG, "can't open the AI dictionary settings") }
+        }
+    }
+
+    /**
+     * ux-9 (store version, no access to photos): a new picture appeared in the gallery in the last 2 minutes (only the time
+     * is known, through a ContentObserver: no permission, nothing is read) and the field takes pictures: "📷 Insert the
+     * new picture" in the strip; a tap opens the system Photo Picker. Dismissed or used: not again for that change.
+     */
+    private fun pickCardView(editorInfo: EditorInfo?, parent: ViewGroup): View? {
+        if (FreshScreenshot.inBuild()) return null // personal: the fresh screenshot itself (5g-15)
+        val info = editorInfo ?: return null
+        val fieldTypes = EditorInfoCompat.getContentMimeTypes(info)
+        val changed = ScreenshotWatch.lastChangeMs
+        if (!PhotoPick.showCard(fieldTypes, info.inputType, info.imeOptions, latinIME.mSettings.current.mIncognitoModeEnabled,
+                changed, System.currentTimeMillis(), PhotoPick.cardDoneFor)) return null
+        return pictureSuggestion(parent, null, latinIME.getString(R.string.photo_pick_card), gray = false,
+            onClose = { PhotoPick.cardDoneFor = changed }) {
+            PhotoPick.cardDoneFor = changed
+            PhotoPick.start(latinIME)
         }
     }
 

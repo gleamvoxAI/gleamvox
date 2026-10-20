@@ -164,12 +164,29 @@ public final class InputAttributes {
         if (editorInfo != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && (editorInfo.imeOptions & EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0) return false;
         final int variation = inputType & InputType.TYPE_MASK_VARIATION;
+        // ux-8 (the owner: the search bar of Chrome/Google showed nothing): the address bar of a browser is a search bar
+        // too, people type ordinary words there; suggestions by tap, no auto-correction (an address must stay as typed)
         return variation == InputType.TYPE_TEXT_VARIATION_NORMAL
+                || variation == InputType.TYPE_TEXT_VARIATION_URI
                 || variation == InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE
                 || variation == InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE
                 || variation == InputType.TYPE_TEXT_VARIATION_FILTER
                 || variation == InputType.TYPE_TEXT_VARIATION_PERSON_NAME
                 || variation == InputType.TYPE_TEXT_VARIATION_EMAIL_SUBJECT;
+    }
+
+    /**
+     * ux-8: in the address / search bar of a browser only ordinary words are learned: never what looks like an address
+     * or an e-mail ("." "/" "@" ":")
+     */
+    public static boolean mayLearnInAddressBar(final int inputType, final String word) {
+        if ((inputType & InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT
+                || (inputType & InputType.TYPE_MASK_VARIATION) != InputType.TYPE_TEXT_VARIATION_URI) return true;
+        for (int i = 0; i < word.length(); i++) {
+            final char c = word.charAt(i);
+            if (c == '.' || c == '/' || c == '@' || c == ':') return false;
+        }
+        return true;
     }
 
     public boolean isTypeNull() {

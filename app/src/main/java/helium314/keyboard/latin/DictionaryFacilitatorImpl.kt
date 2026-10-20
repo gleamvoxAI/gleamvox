@@ -293,6 +293,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         suggestion: String, wasAutoCapitalized: Boolean, ngramContext: NgramContext,
         timeStampInSeconds: Long, blockPotentiallyOffensive: Boolean
     ) {
+        // ux-8: from the address / search bar of a browser only ordinary words (no addresses, no e-mails)
+        if (!InputAttributes.mayLearnInAddressBar(Settings.getValues().mInputAttributes.mInputType, suggestion)) return
         // Update the spelling cache before learning. Words that are not yet added to user history
         // and appear in no other language model are not considered valid.
         putWordIntoValidSpellingWordCache("addToUserHistory", suggestion)
@@ -393,6 +395,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     override fun learnNewWord(word: String, wasAutoCapitalized: Boolean, likelyTypo: Boolean, explicit: Boolean): Boolean {
         val sv = Settings.getValues()
         if (!sv.mAddToPersonalDictionary || word.length <= 1 || word.any { it.isDigit() } || word.splitOnWhitespace().size != 1) return false
+        if (!InputAttributes.mayLearnInAddressBar(sv.mInputAttributes.mInputType, word)) return false // ux-8
         if (sv.mAutoCorrectEnabled != sv.mAutoCorrectionEnabledPerUserSettings && !sv.mInputAttributes.mSuggestionsByTapOnly) return false // the field wants no autocorrection: unclear what the person meant
         // ux-3: the same way for a tap and for "typed and left" (the owner: a tap saved the word, the automatic way did not):
         // the same language choice (with several languages "clearly preferred" is often unknown), no refusal for a capital

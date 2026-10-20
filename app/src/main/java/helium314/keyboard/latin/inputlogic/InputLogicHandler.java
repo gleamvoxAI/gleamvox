@@ -82,6 +82,11 @@ class InputLogicHandler implements Handler.Callback {
                 return;
             }
             mInputLogic.mWordComposer.setBatchInputPointers(batchPointers);
+            // swipe-3 (4439: a long delay after lifting the finger): an update of the path while the previous one still
+            // waits is not queued (the waiting one reads the newest path), so the end of the glide never waits behind a
+            // queue of updates
+            // (only in the play build, owner's rule 2026-10-19: the personal build stays as it was)
+            if (!isTailBatchInput && helium314.keyboard.latin.glide.OpenGlide.getPlay() && mNonUIThreadHandler.hasMessages(MSG_GET_SUGGESTED_WORDS)) return;
             getSuggestedWords(() -> mInputLogic.getSuggestedWords(
                 isTailBatchInput ? SuggestedWords.INPUT_STYLE_TAIL_BATCH : SuggestedWords.INPUT_STYLE_UPDATE_BATCH, sequenceNumber,
                 suggestedWords -> showGestureSuggestionsWithPreviewVisuals(suggestedWords, isTailBatchInput))

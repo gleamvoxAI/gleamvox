@@ -84,6 +84,20 @@ object PhotoPick {
 
     enum class Decision { INSERT, EXPIRED, HIDDEN, NOT_ACCEPTED }
 
+    /** ux-9: the change of the gallery the strip card was used or dismissed for (not shown again for it) */
+    @Volatile var cardDoneFor: Long? = null
+
+    /**
+     * ux-9: the card "📷 Insert the new picture" in the strip: a picture appeared in the gallery within 2 minutes
+     * ([changedMs], only the time is known), the field takes pictures, not a password, number, "do not remember" field
+     * or incognito, and the card was not used or dismissed for this change
+     */
+    fun showCard(fieldTypes: Array<String>, inputType: Int, imeOptions: Int, incognito: Boolean, changedMs: Long?, nowMs: Long, doneFor: Long?): Boolean {
+        if (changedMs == null || nowMs - changedMs > TTL_MS || changedMs == doneFor) return false
+        if (ImageRules.hiddenField(inputType, imeOptions, incognito)) return false
+        return ImageRules.accepts(fieldTypes, "image/png")
+    }
+
     /**
      * what happens with the picked picture in this field: passwords, numbers and "do not remember" fields never get it;
      * a field that names the picture types it takes but not this one says so; a field that names none gets the system

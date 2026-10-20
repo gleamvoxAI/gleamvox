@@ -1043,7 +1043,12 @@
     <string name="app_language_title">Язык интерфейса / App language</string>
     <string name="app_language_system">Как в системе</string>
     <string name="app_language_note">Меняет только язык экранов приложения. Языки и раскладки клавиатуры — в пункте «Языки и раскладки».</string>
-    <string name="photo_pick_button">📷 Скриншот или фото</string>
     <string name="photo_pick_not_accepted">Это поле не принимает картинки</string>
     <string name="photo_pick_failed">Не удалось взять картинку</string>
+    <!-- ai-dict-3 -->
+    <string name="ai_dict_reset_journal">Сбросить счётчики</string>
+    <!-- ux-9 -->
+    <string name="photo_pick_panel">📷 Вставить скриншот или фото</string>
+    <string name="photo_pick_recent_first">Последние снимки — первыми</string>
+    <string name="photo_pick_card">📷 Вставить новый снимок</string>
 </resources>

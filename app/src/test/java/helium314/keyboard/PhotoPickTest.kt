@@ -87,6 +87,24 @@ class PhotoPickTest {
         assertEquals(PhotoPick.Decision.HIDDEN, decide(incognito = true))
     }
 
+    /** ux-9: the card in the strip: only within 2 minutes of a new picture, only in fields that take pictures, once per change */
+    @Test fun cardInTheStrip() {
+        val now = 10_000_000L
+        val text = InputType.TYPE_CLASS_TEXT
+        fun card(types: Array<String> = arrayOf("image/*"), input: Int = text, options: Int = 0, incognito: Boolean = false,
+                 changed: Long? = now - 30_000, done: Long? = null) = PhotoPick.showCard(types, input, options, incognito, changed, now, done)
+        assertTrue(card(), "a new picture half a minute ago, a chat field")
+        assertFalse(card(changed = null), "nothing new in the gallery")
+        assertFalse(card(changed = now - 3 * 60_000), "older than 2 minutes")
+        assertFalse(card(done = now - 30_000), "used or dismissed for this change")
+        assertTrue(card(done = now - 90_000), "a newer picture: again")
+        assertFalse(card(types = emptyArray()), "the field takes no pictures")
+        assertFalse(card(input = text or InputType.TYPE_TEXT_VARIATION_PASSWORD))
+        assertFalse(card(input = InputType.TYPE_CLASS_NUMBER))
+        assertFalse(card(options = EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING))
+        assertFalse(card(incognito = true))
+    }
+
     @Test fun noPermissionToPhotosInTheStoreVersion() {
         val play = File("src/play/AndroidManifest.xml").readText()
         assertTrue("READ_MEDIA_IMAGES\" tools:node=\"remove\"" in play, "the store version still has no access to photos")

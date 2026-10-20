@@ -321,6 +321,8 @@ android {
                 it.systemProperty("aikb.lmEval", (project.findProperty("aikbLmEval") as String?) ?: "")
                 // play-4: the store pictures are drawn only from tools/aikb/build.sh shots (StoreShotsTest)
                 it.systemProperty("aikb.storeShots", (project.findProperty("aikbStoreShots") as String?) ?: "")
+                // swipe-4: our glide typing on the real swipes of the FUTO dataset (MIT), only from tools/aikb/build.sh swipebench
+                it.systemProperty("aikb.swipeBench", (project.findProperty("aikbSwipeBench") as String?) ?: "")
             }
         }
     }

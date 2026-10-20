@@ -53,8 +53,13 @@ object AiDictionary {
     /** suggestions the model added (not from the dictionary) */
     @JvmField val SOURCE = helium314.keyboard.latin.dictionary.Dictionary.PhonyDictionary("ai_dict")
 
-    /** the text before the word being typed (set by InputLogic right before suggestions are requested) */
+    /**
+     * the text before the word being typed (set by InputLogic right before suggestions are requested). ai-dict-3: a new
+     * context (the first letter of a new word, or the keyboard shown in a field) is computed by the model at once in the
+     * background, so the letters of the word only need the candidates scored
+     */
     @Volatile var textBefore: String = ""
+        set(value) { val changed = field != value; field = value; if (changed) prepare() }
     /** the language of the keyboard (set by Suggest from the dictionary's locale): tells the model the language */
     @Volatile var language: String = ""
         set(value) { field = when (value) { "in" -> "id"; "iw" -> "he"; else -> value } } // old Java codes of Android
@@ -97,7 +102,10 @@ object AiDictionary {
     /** true while Backspace is held: the model is not used and its context is not even read */
     @JvmStatic fun isHeld() = held
 
-    private class Engine(val close: () -> Unit, val words: WordModel, val ranker: LmRanker, val setLanguage: (String) -> Unit)
+    private class Engine(val close: () -> Unit, val words: WordModel, val ranker: LmRanker, val setLanguage: (String) -> Unit) {
+        /** ai-dict-3: the first answer after loading is "cold" (the memory of the model is touched the first time) */
+        @Volatile var answered = false
+    }
 
     private val executor = Executors.newSingleThreadExecutor { r -> Thread(r, "ai-dict").apply { priority = Thread.NORM_PRIORITY - 1; isDaemon = true } }
     @Volatile private var engine: Engine? = null
@@ -109,6 +117,39 @@ object AiDictionary {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Any>) = size > 64
     }
     private val pending = HashMap<String, Future<*>>()
+    /** ai-dict-3: the newest waiting request of each kind ("r" rerank, "p" predict, "c" context): an older one is dropped */
+    private val newest = HashMap<Char, Pair<String, Future<*>>>()
+
+    /** runs [job] and notes how long the model counted (every answer, also the late ones) */
+    private fun <T> timed(e: Engine, job: (Engine) -> T): T {
+        val t0 = System.nanoTime()
+        val r = job(e)
+        Journal.computed((System.nanoTime() - t0) / 1_000_000, cold = !e.answered)
+        e.answered = true
+        return r
+    }
+
+    /** a new request of a kind drops the older one of that kind that has not started yet (the typed word changed) */
+    private fun replaceNewest(key: String, f: Future<*>) {
+        val kind = key[0]
+        val old = newest.put(kind, key to f)
+        if (old != null && old.first != key && old.second.cancel(false)) { pending.remove(old.first); Journal.dropped() }
+    }
+
+    /** ai-dict-3: the state of the context ahead of the letters (no waiting; dropped if the word changes first) */
+    private fun prepare() {
+        val e = engine ?: return
+        val before = textBefore
+        val lang = language
+        if (held) return
+        val key = "c\u0000$lang\u0000$before"
+        synchronized(pending) {
+            if (pending[key] != null) return
+            val f = executor.submit { try { e.setLanguage(lang); e.words.prepare(before) } catch (t: Throwable) { Log.w(TAG, "prepare failed", t) } finally { synchronized(pending) { pending.remove(key) } } }
+            pending[key] = f
+            replaceNewest(key, f)
+        }
+    }
 
     /** starts loading the model in the background (a few seconds); suggestions use the dictionary meanwhile */
     fun warmUp(context: Context) {
@@ -126,7 +167,10 @@ object AiDictionary {
                     engine = Engine({ lm.close() }, words, LmRanker(words), { words.language = it })
                     loadMs = (System.nanoTime() - t0) / 1_000_000
                     loadError = null
+                    // ai-dict-3: the memory of the keyboard's process with the model in it (PSS, as the system counts it)
+                    Journal.loaded(loadMs, try { android.os.Debug.getPss() / 1024 } catch (_: Throwable) { -1L })
                     Log.i(TAG, "model loaded in $loadMs ms")
+                    prepare() // the context of the field is computed right away
                 } catch (t: Throwable) {
                     loadError = t.toString()
                     Log.w(TAG, "model not loaded", t)
@@ -155,7 +199,7 @@ object AiDictionary {
                     synchronized(pending) {
                         if (pending[key] == null) pending[key] = executor.submit {
                             try {
-                                val r = job(e)
+                                val r = timed(e, job)
                                 synchronized(cache) { cache[key] = r }
                                 onLateResult?.invoke()
                             } finally { synchronized(pending) { pending.remove(key) } }
@@ -169,13 +213,13 @@ object AiDictionary {
         val f = synchronized(pending) {
             pending[key] ?: executor.submit<T> {
                 try {
-                    job(e).also { r ->
+                    timed(e, job).also { r ->
                         synchronized(cache) { cache[key] = r }
                         // the suggestion thread did not wait for it: ask the keyboard to show the suggestions again
                         if (gaveUp.get()) onLateResult?.invoke()
                     }
                 } finally { synchronized(pending) { pending.remove(key) } }
-            }.also { pending[key] = it }
+            }.also { pending[key] = it; replaceNewest(key, it) }
         }
         val t0 = System.nanoTime()
         return try {
@@ -183,6 +227,8 @@ object AiDictionary {
         } catch (_: TimeoutException) {
             gaveUp.set(true)
             Journal.late(); null
+        } catch (_: java.util.concurrent.CancellationException) {
+            null // dropped: a newer request of the same kind came
         } catch (t: Throwable) {
             Log.w(TAG, "model failed", t); Journal.failed(); null
         }
@@ -234,32 +280,69 @@ object AiDictionary {
         @Volatile var changed = 0; private set
         @Volatile var totalMs = 0L; private set
         @Volatile var maxMs = 0L; private set
+        /** ai-dict-3: requests dropped because a newer one of the same kind came before they started */
+        @Volatile var dropped = 0; private set
+        /** ai-dict-3: how long the model counted for every answer (also the late ones), the last [KEEP] warm ones */
+        private val warm = ArrayDeque<Long>()
+        @Volatile var coldMs = -1L; private set
+        @Volatile var lastLoadMs = -1L; private set
+        @Volatile var memoryMb = -1L; private set
         private var dirty = 0
+        private const val KEEP = 200
 
         @Synchronized fun inTime(ms: Long) { calls++; totalMs += ms; if (ms > maxMs) maxMs = ms; dirty++ }
         @Synchronized fun late() { calls++; late++; dirty++ }
         @Synchronized fun cached() { cachedHits++ }
         @Synchronized fun failed() { calls++; failed++ }
+        @Synchronized fun dropped() { dropped++; dirty++ }
         /** the model's choice (autocorrection or first suggestion) differs from the dictionary's */
         @Synchronized fun changedChoice() { changed++; dirty++ }
+        @Synchronized fun computed(ms: Long, cold: Boolean) {
+            if (cold) coldMs = ms else { warm.addLast(ms); while (warm.size > KEEP) warm.removeFirst() }
+            dirty++
+        }
+        @Synchronized fun loaded(ms: Long, mb: Long) { lastLoadMs = ms; memoryMb = mb; dirty++ }
 
-        fun summary(): String {
-            val avg = if (calls - late - failed > 0) totalMs / (calls - late - failed) else 0
-            return "ответов модели: $calls (в срок ${calls - late - failed}, поздно $late, ошибок $failed, из памяти $cachedHits); " +
-                "среднее $avg мс, максимум $maxMs мс; модель изменила выбор словаря: $changed раз"
+        /** median, 90th percentile and maximum of the warm answers (null: none yet) */
+        @Synchronized fun warmStats(): Triple<Long, Long, Long>? {
+            if (warm.isEmpty()) return null
+            val s = warm.sorted()
+            return Triple(s[(s.size - 1) / 2], s[((s.size - 1) * 9 + 9) / 10].coerceAtMost(s.last()), s.last())
         }
 
-        fun save(prefs: SharedPreferences) { if (dirty > 0) { prefs.edit { putString(PREF_JOURNAL, "$calls,$late,$cachedHits,$failed,$changed,$totalMs,$maxMs") }; dirty = 0 } }
+        fun summary(): String {
+            val inTime = calls - late - failed
+            val avg = if (inTime > 0) totalMs / inTime else 0
+            val w = warmStats()
+            return "ответов модели: $calls (в срок $inTime, поздно $late, ошибок $failed, из памяти $cachedHits, сняты как устаревшие $dropped); " +
+                "ожидание в срок: среднее $avg мс, максимум $maxMs мс; " +
+                "счёт модели (все ответы, и поздние): " + (if (w == null) "ещё нет" else "медиана ${w.first} мс, 90% ${w.second} мс, максимум ${w.third} мс (${warm.size} отв.)") +
+                "; первый ответ после загрузки: " + (if (coldMs >= 0) "$coldMs мс" else "ещё нет") +
+                "; загрузка модели: " + (if (lastLoadMs >= 0) "$lastLoadMs мс" else "не было") +
+                ", память клавиатуры после загрузки: " + (if (memoryMb >= 0) "$memoryMb МБ" else "?") +
+                "; модель изменила выбор словаря: $changed раз"
+        }
+
+        fun save(prefs: SharedPreferences) {
+            if (dirty == 0) return
+            val times = synchronized(this) { warm.joinToString(";") }
+            prefs.edit { putString(PREF_JOURNAL, "$calls,$late,$cachedHits,$failed,$changed,$totalMs,$maxMs,$dropped,$coldMs,$lastLoadMs,$memoryMb,$times") }
+            dirty = 0
+        }
 
         fun load(prefs: SharedPreferences) {
-            val p = prefs.getString(PREF_JOURNAL, null)?.split(',')?.mapNotNull { it.toLongOrNull() } ?: return
+            val raw = prefs.getString(PREF_JOURNAL, null)?.split(',') ?: return
+            val p = raw.take(11).mapNotNull { it.toLongOrNull() }
             if (p.size < 7) return
             calls = p[0].toInt(); late = p[1].toInt(); cachedHits = p[2].toInt(); failed = p[3].toInt(); changed = p[4].toInt()
             totalMs = p[5]; maxMs = p[6]
+            if (p.size >= 11) { dropped = p[7].toInt(); coldMs = p[8]; lastLoadMs = p[9]; memoryMb = p[10] }
+            synchronized(this) { warm.clear(); raw.getOrNull(11)?.split(';')?.mapNotNull { it.toLongOrNull() }?.let { warm.addAll(it.takeLast(KEEP)) } }
         }
 
         @Synchronized fun reset(prefs: SharedPreferences) {
             calls = 0; late = 0; cachedHits = 0; failed = 0; changed = 0; totalMs = 0; maxMs = 0
+            dropped = 0; coldMs = -1; lastLoadMs = -1; memoryMb = -1; warm.clear()
             prefs.edit { remove(PREF_JOURNAL) }
         }
     }

@@ -1809,7 +1809,12 @@ New dictionary:
     <string name="app_language_system">As in the system</string>
     <string name="app_language_note">Changes only the language of the app\'s screens. Keyboard languages and layouts are in \"Languages &amp; Layouts\".</string>
     <!-- ux-7: a picture chosen in the system Photo Picker -->
-    <string name="photo_pick_button">📷 Screenshot or photo</string>
     <string name="photo_pick_not_accepted">This field does not take pictures</string>
     <string name="photo_pick_failed">Could not take the picture</string>
+    <!-- ai-dict-3 -->
+    <string name="ai_dict_reset_journal">Reset the counters</string>
+    <!-- ux-9 -->
+    <string name="photo_pick_panel">📷 Insert a screenshot or photo</string>
+    <string name="photo_pick_recent_first">The newest pictures come first</string>
+    <string name="photo_pick_card">📷 Insert the new picture</string>
 </resources>

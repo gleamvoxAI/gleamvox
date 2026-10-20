@@ -145,11 +145,20 @@ fun createAiDictionarySetting(context: Context) = Setting(context, SettingsWitho
             onDismissRequest = { dialog = false },
             onConfirmed = { val v = !on; prefs.edit { putBoolean(AiDictionary.PREF_ON, v) }; on = v; if (!v) AiDictionary.release() },
             title = { Text(stringResource(R.string.ai_dict_title)) },
-            content = { Text(stringResource(R.string.ai_dict_downloaded, model.title, mb(model.totalBytes), model.license) +
-                "\n\n" + AiDictionary.Journal.summary() +
+            content = {
+                // ai-dict-3: the counters can be reset, so the numbers of a few new phrases can be read
+                var resets by remember { mutableStateOf(0) }
+                Column {
+                Text(stringResource(R.string.ai_dict_downloaded, model.title, mb(model.totalBytes), model.license) +
+                "\n\n" + (if (resets >= 0) AiDictionary.Journal.summary() else "") +
                 "\n\n" + helium314.keyboard.latin.ailm.EraseStats.summary() +
                 "\n\n" + helium314.keyboard.latin.WordLearning.summary(prefs, helium314.keyboard.latin.PersonalWords.size()) +
-                (AiDictionary.loadError?.let { e -> "\n\n" + stringResource(R.string.ai_dict_load_error, e) } ?: "")) },
+                (AiDictionary.loadError?.let { e -> "\n\n" + stringResource(R.string.ai_dict_load_error, e) } ?: ""))
+                androidx.compose.material3.TextButton(onClick = { AiDictionary.Journal.reset(prefs); resets++ }) {
+                    Text(stringResource(R.string.ai_dict_reset_journal))
+                }
+                }
+            },
             confirmButtonText = stringResource(if (on) R.string.ai_dict_switch_off else R.string.ai_dict_switch_on),
             neutralButtonText = stringResource(R.string.ai_dict_delete),
             onNeutral = { AiDictDownloads.delete(ctx) },

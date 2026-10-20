@@ -32,18 +32,40 @@ object OpenGlide {
 
     private class State(val name: String) {
         @Volatile var index: GlideIndex? = null; @Volatile var building = false
+        /** swipe-3: the index of the personal build (the matcher of swipe-2, unchanged) */
+        @Volatile var legacy: LegacyGlideIndex? = null
         @Volatile var buildMs = -1L; @Volatile var error: String? = null
     }
     private val states = WeakHashMap<Dictionary, State>()
     private fun stateOf(dict: Dictionary) = synchronized(states) { states.getOrPut(dict) { State(dict.mLocale?.toString() ?: "?") } }
 
+    /** swipe-3: how long the search of words took for the last glides (and updates during a glide), in ms */
+    /**
+     * swipe-3 (owner's rule 2026-10-19): the faster matcher, the timing and the merged updates are for the play build
+     * only; the personal build keeps the matcher of swipe-2 behind its "Open glide engine" switch
+     */
+    @JvmStatic val play = helium314.keyboard.latin.BuildConfig.BUILD_TYPE == "play"
+
+    object Timing {
+        private val last = ArrayDeque<Long>()
+        @Synchronized fun add(ms: Long) { last.addLast(ms); while (last.size > 100) last.removeFirst() }
+        @Synchronized fun summary(): String {
+            if (last.isEmpty()) return "поиск слов ещё не запускался"
+            val s = last.sorted()
+            return "поиск слов: медиана ${s[(s.size - 1) / 2]} мс, максимум ${s.last()} мс (${s.size} раз)"
+        }
+    }
+
     /** swipe-2: for "Проверка словарей": every dictionary of this process with its index (words, time) or why not */
-    fun status(): String = synchronized(states) {
+    fun status(): String = statusOfIndexes() + (if (play) "; " + Timing.summary() else "")
+
+    private fun statusOfIndexes(): String = synchronized(states) {
         if (!active()) return "закрытая библиотека Google (открытый движок не используется)"
         if (states.isEmpty()) return "словари для свайпа ещё не читались (клавиатура не открывалась после запуска)"
         states.values.joinToString("; ") { s ->
             s.name + ": " + when {
                 s.index != null -> "${s.index!!.size} слов за ${s.buildMs} мс"
+                s.legacy != null -> "${s.legacy!!.size} слов за ${s.buildMs} мс"
                 s.error != null -> "ошибка ${s.error}"
                 s.building -> "читается"
                 else -> "не читался"
@@ -54,7 +76,7 @@ object OpenGlide {
     /** reads all words of [dict] in the background (once); [read] gives them one after another */
     @JvmStatic fun warmUp(dict: ReadOnlyBinaryDictionary) {
         val state = stateOf(dict)
-        if (state.index != null || state.building) return
+        if (state.index != null || state.legacy != null || state.building) return
         state.building = true
         Thread({
             try {
@@ -63,7 +85,8 @@ object OpenGlide {
                 dict.forEachWord { word, probability ->
                     if (word.length in 2..24) { words.add(word); probs.add(probability.coerceIn(0, 255).toByte()) }
                 }
-                state.index = GlideIndex(words.toTypedArray(), probs.toByteArray())
+                if (play) state.index = GlideIndex(words.toTypedArray(), probs.toByteArray())
+                else state.legacy = LegacyGlideIndex(words.toTypedArray(), probs.toByteArray())
                 state.buildMs = System.currentTimeMillis() - t
                 Log.i(TAG, "index of ${words.size} words in ${state.buildMs} ms")
             } catch (e: Throwable) {
@@ -77,12 +100,23 @@ object OpenGlide {
     @JvmStatic fun suggest(dict: ReadOnlyBinaryDictionary, composedData: ComposedData): ArrayList<SuggestedWordInfo> {
         val result = ArrayList<SuggestedWordInfo>()
         val state = stateOf(dict)
+        val pointers = composedData.mInputPointers
+        val n = pointers.pointerSize
+        if (!play) { // personal: the matcher of swipe-2, as it was
+            val legacy = state.legacy ?: run { warmUp(dict); return result }
+            val keys = centersOf(keyboard ?: return result)?.let { (c, w, h) -> LegacyGlideKeys(c, w, h) } ?: return result
+            for (r in LegacyGlideMatcher.match(pointers.xCoordinates, pointers.yCoordinates, n, keys, legacy))
+                result.add(SuggestedWordInfo(r.word, "", r.score, SuggestedWordInfo.KIND_CORRECTION, dict,
+                    SuggestedWordInfo.NOT_AN_INDEX, SuggestedWordInfo.NOT_A_CONFIDENCE))
+            return result
+        }
         val index = state.index
         if (index == null) { warmUp(dict); return result }
         val keys = keysOf(keyboard ?: return result) ?: return result
-        val pointers = composedData.mInputPointers
-        val n = pointers.pointerSize
-        for (r in GlideMatcher.match(pointers.xCoordinates, pointers.yCoordinates, n, keys, index)) {
+        val t0 = System.nanoTime()
+        val found = GlideMatcher.match(pointers.xCoordinates, pointers.yCoordinates, n, keys, index)
+        Timing.add((System.nanoTime() - t0) / 1_000_000)
+        for (r in found) {
             result.add(SuggestedWordInfo(r.word, "", r.score, SuggestedWordInfo.KIND_CORRECTION, dict,
                 SuggestedWordInfo.NOT_AN_INDEX, SuggestedWordInfo.NOT_A_CONFIDENCE))
         }
@@ -95,6 +129,13 @@ object OpenGlide {
     /** centres of the letter keys of [kb] (cached for the keyboard that is shown) */
     @Synchronized internal fun keysOf(kb: Keyboard): GlideKeys? {
         if (kb === cachedKeyboard) return cachedKeys
+        cachedKeyboard = kb
+        cachedKeys = centersOf(kb)?.let { (c, w, h) -> GlideKeys(c, w, h) }
+        return cachedKeys
+    }
+
+    /** the centres of the letter keys and the average key size; null: not a keyboard of letters */
+    private fun centersOf(kb: Keyboard): Triple<Map<Int, FloatArray>, Float, Float>? {
         val centers = HashMap<Int, FloatArray>()
         var widthSum = 0f; var heightSum = 0f; var count = 0
         for (key in kb.sortedKeys) {
@@ -105,8 +146,6 @@ object OpenGlide {
             centers.putIfAbsent(folded[0], floatArrayOf(key.x + key.width / 2f, key.y + key.height / 2f))
             widthSum += key.width; heightSum += key.height; count++
         }
-        cachedKeyboard = kb
-        cachedKeys = if (count < 10) null else GlideKeys(centers, widthSum / count, heightSum / count)
-        return cachedKeys
+        return if (count < 10) null else Triple(centers, widthSum / count, heightSum / count)
     }
 }

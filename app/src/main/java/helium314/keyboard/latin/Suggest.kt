@@ -98,13 +98,15 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
         // sentence, or merges its own next words into the predictions. Null: no model, or it did not answer in time.
         val dictionaryFirst = suggestionsContainer.firstOrNull()?.mWord
         AiDictionary.language = mDictionaryFacilitator.currentLocale.language
-        val ai = if (resultsArePredictions || typedWordString.isEmpty()) null
+        // ux-8: never the AI model in the address / search bar of a browser (local suggestions of the dictionary only)
+        val addressBar = helium314.keyboard.latin.utils.InputTypeUtils.isUriOrEmailType(Settings.getValues().mInputAttributes.mInputType)
+        val ai = if (resultsArePredictions || typedWordString.isEmpty() || addressBar) null
             else AiDictionary.rerank(capitalizedTypedWord,
                 suggestionsContainer.take(LmRanker.MAX_CANDIDATES).map { it.mWord }, typedWordFirstOccurrenceWordInfo != null)
         if (ai != null) {
             val order = ai.ranked.map { it.word }
             suggestionsContainer.sortBy { order.indexOf(it.mWord).let { i -> if (i < 0) Int.MAX_VALUE else i } }
-        } else if (resultsArePredictions && typedWordString.isEmpty()) {
+        } else if (resultsArePredictions && typedWordString.isEmpty() && !addressBar) {
             AiDictionary.predict(suggestionsContainer.map { it.mWord })?.let { words ->
                 val byWord = suggestionsContainer.associateBy { it.mWord }
                 val merged = words.map { w -> byWord[w] ?: SuggestedWordInfo(w, "", SuggestedWordInfo.MAX_SCORE / 2,
