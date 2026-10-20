@@ -44,6 +44,7 @@ import kotlin.streams.asSequence
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [
@@ -890,6 +891,25 @@ class InputLogicTest {
         latinIME.mInputLogic.setSuggestedWords(sw) // this prepares for autocorrect
         input(' ')
         checkConnectionConsistency()
+    }
+
+    /** swipe-5: after a glide a later update of the strip as typing keeps the glide's suggestions */
+    @Test fun glideResultIsNotReplacedByALaterUpdate() {
+        reset()
+        val info = SuggestedWordInfo("hello", "", 0, 0, null, 0, 0)
+        val other = SuggestedWordInfo("hell", "", 0, 0, null, 0, 0)
+        val sw = SuggestedWords(ArrayList(listOf(info, other)), null, info, true, false, false, SuggestedWords.INPUT_STYLE_TAIL_BATCH, 0)
+        latinIME.mInputLogic.onUpdateTailBatchInputCompleted(settingsValues, sw, KeyboardSwitcher.getInstance())
+        latinIME.mInputLogic.setSuggestedWords(sw)
+        val before = helium314.keyboard.latin.glide.OpenGlide.StripLog.keptCount
+        latinIME.mInputLogic.performUpdateSuggestionStripSync(settingsValues, SuggestedWords.INPUT_STYLE_TYPING)
+        assertEquals(listOf("hello", "hell"), (0 until latinIME.mInputLogic.mSuggestedWords.size()).map { latinIME.mInputLogic.mSuggestedWords.getWord(it) })
+        assertEquals(before + 1, helium314.keyboard.latin.glide.OpenGlide.StripLog.keptCount)
+        // the next letter starts a new word: the strip is updated as usual again
+        input('a')
+        val k = helium314.keyboard.latin.glide.OpenGlide.StripLog.keptCount
+        latinIME.mInputLogic.performUpdateSuggestionStripSync(settingsValues, SuggestedWords.INPUT_STYLE_TYPING)
+        assertEquals(k, helium314.keyboard.latin.glide.OpenGlide.StripLog.keptCount, "a typed word is no glide: not kept")
     }
 
     private fun glideTypingInput(word: String) {

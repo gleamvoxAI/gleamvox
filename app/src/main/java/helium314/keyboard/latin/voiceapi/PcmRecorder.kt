@@ -40,7 +40,16 @@ class SpeechEndDetector(
     private val vad: WebRtcVad? = WebRtcVad(VAD_MODE),
     /** stage 5g-19: a Silero stream for this detector (asked for at the first frame, on the recording thread); null: WebRTC */
     private val silero: (() -> SpeechProbability?)? = null,
+    /**
+     * stage 5g-27 (4449 in the car F0: the phone in the call mode records speech at -25…-32 dBFS, Silero saw it with a
+     * probability of 0.45–0.69 against a threshold of 0.5–0.6 and the recording stopped in the middle of a phrase): a car
+     * is there. The detectors hear a copy raised so that the loud part of the last 1.5 s is near -9 dBFS ([CAR_PEAK_TARGET],
+     * by at most [CAR_MAX_GAIN]); the thresholds of Silero are [CAR_THRESHOLD_DROP] lower; the pause before sending is at
+     * least [CAR_END_PAUSE_MS]; no end of speech in the first [CAR_NO_END_MS]. What is sent is not changed here.
+     */
+    private val car: Boolean = false,
 ) {
+    private val endPauseMs = if (car) max(endSilenceMs, CAR_END_PAUSE_MS) else endSilenceMs
     enum class Event { NONE, END_OF_SPEECH, NO_SPEECH }
 
     /** RMS of the last 1.5 s: the quietest of them is the noise level (minimum statistics) */
@@ -130,7 +139,7 @@ class SpeechEndDetector(
                 stream = null; vadName = "webrtc (silero failed: ${e.javaClass.simpleName})"; chunk.fill(0f); return lastVoice
             }
             probSum += p; probCount++; if (p > probMax) probMax = p
-            val (on, off) = sileroThresholds(roadDbfs())
+            val (on, off) = sileroThresholds(roadDbfs()).let { (a, b) -> if (car) (a - CAR_THRESHOLD_DROP) to (b - CAR_THRESHOLD_DROP) else a to b }
             threshold = on
             sileroSpeech = if (sileroSpeech) p >= off else p >= on
         }
@@ -149,7 +158,9 @@ class SpeechEndDetector(
         recentPeaks.addLast(Loudness.peak(frame, n))
         if (recentPeaks.size > NOISE_WINDOW_FRAMES) recentPeaks.removeFirst()
         val floor = min(recent.minOrNull() ?: rms, rms).coerceAtLeast(1.0)
-        val gain = minOf(VAD_MAX_GAIN, VAD_NOISE_TARGET / floor, VAD_PEAK_LIMIT / recentPeaks.max().coerceAtLeast(1)).coerceAtLeast(1.0)
+        val gain = if (car) carGain()
+            else minOf(VAD_MAX_GAIN, VAD_NOISE_TARGET / floor, VAD_PEAK_LIMIT / recentPeaks.max().coerceAtLeast(1)).coerceAtLeast(1.0)
+        lastGain = gain
         if (vadFrame.size < n) vadFrame = ShortArray(n)
         for (i in 0 until n) vadFrame[i] = (frame[i] * gain).toInt().coerceIn(-32768, 32767).toShort()
         // the VAD needs whole frames of 10, 20 or 30 ms; a short read keeps the last decision
@@ -162,6 +173,15 @@ class SpeechEndDetector(
         return feed(rms, voice)
     }
     private var lastVoice = false
+    /** stage 5g-27: the gain of the copy the detectors heard last (for the journal: what it made of the phone's level) */
+    var lastGain = 1.0
+        private set
+    /** stage 5g-27: the car: the loud part (the 90 % peak) of the last 1.5 s to about -9 dBFS */
+    private fun carGain(): Double {
+        val sorted = recentPeaks.sorted()
+        val loud = sorted[(sorted.size - 1) * 9 / 10].coerceAtLeast(1)
+        return (CAR_PEAK_TARGET / loud).coerceIn(1.0, CAR_MAX_GAIN)
+    }
     private var heardRun = 0
     private var speechRun = 0
     private val recentPeaks = ArrayDeque<Int>()
@@ -208,7 +228,7 @@ class SpeechEndDetector(
         if (!hadSpeech && speechMs >= minSpeech) hadSpeech = true
         knownQuietMs = if (recent.size * frameMs < NOISE_KNOWN_MS || speech) 0 else knownQuietMs + frameMs
         return when {
-            hadSpeech && silenceMs >= endSilenceMs -> Event.END_OF_SPEECH
+            hadSpeech && silenceMs >= endPauseMs && !(car && totalMs < CAR_NO_END_MS) -> Event.END_OF_SPEECH
             !hadSpeech && totalMs >= noSpeechTimeoutMs -> Event.NO_SPEECH
             else -> Event.NONE
         }
@@ -248,6 +268,13 @@ class SpeechEndDetector(
             val t = ((noiseDbfs - LOUD_NOISE_DBFS) / 10.0).coerceIn(0.0, 1.0).toFloat()
             return (0.6f + 0.1f * t) to (0.35f + 0.1f * t)
         }
+        /** stage 5g-27: the car: the detectors hear speech at about -9 dBFS, by at most 40 times (32 dB) */
+        const val CAR_PEAK_TARGET = 11_600.0
+        const val CAR_MAX_GAIN = 40.0
+        /** stage 5g-27: the car: Silero's thresholds this much lower; the pause before sending at least 2 s; no end in the first 2 s */
+        const val CAR_THRESHOLD_DROP = 0.1f
+        const val CAR_END_PAUSE_MS = 2000
+        const val CAR_NO_END_MS = 2000
         /** WebRTC VAD mode: 2 "aggressive" (measured 2026-10-14: mode 3 lost quiet speech, modes 0 and 1 took tones and noise) */
         const val VAD_MODE = 2
         /** voice shape: the loudest band below 1 kHz may be at most this much (10 dB, Q4) below the loudest band above */
@@ -1210,7 +1237,7 @@ class PcmRecorder(
                 } else peak = max(peak, framePeak)
                 // stage 5g-21: the loudest of the first 2 s (the probe "mute the radio with a call": does the phone hear?)
                 if (ms(totalSamples) <= EARLY_MS) earlyPeak = max(earlyPeak, mainPeak)
-                // stage 5g-24: the first 800 ms by 100 ms windows, said once
+                // stage 5g-24: the first 800 ms (5g-27: 2 s) by 100 ms windows, said once
                 if (earlyWindows.size < EARLY_WINDOWS) {
                     windowPeak = max(windowPeak, mainPeak); windowSamples += n
                     if (ms(windowSamples) >= EARLY_WINDOW_MS) {
@@ -1388,7 +1415,8 @@ class PcmRecorder(
         const val PROBATION_LATE_GAP_DB = 10.0
         /** after the channel is given back the phone settles this long; a frame this loud in that time is a click */
         const val SETTLE_MS = 200L
-        private const val EARLY_WINDOWS = 8
+        /** stage 5g-27: the first 2 s by 100 ms (was 800 ms): the deaf moments of the car's channel are later than 800 ms */
+        private const val EARLY_WINDOWS = 20
         private const val EARLY_WINDOW_MS = 100L
         private const val CLICK_PEAK = 32_000
         /** the phone's level before the try (0.5 s) and after it (0.8 s), for the journal */

@@ -155,33 +155,39 @@ fun AiAdvancedContent(onSwitchedOff: () -> Unit = {}) {
         HorizontalDivider()
         MicCheckBlock()
         HorizontalDivider()
-        // stage 5g-21: how long the car's link stays warm after a phrase from the phone
+        // stage 5g-28: the warm link of 5g-21 (the car's microphone held after a phrase) is not shown any more: with the
+        // call that pauses the radio it is never used (only with "no muting", at its default of 60 s).
+        // Instead: how long the call (the pause of the music) stays after a phrase
         if (helium314.keyboard.latin.voiceapi.VoiceApiPrefs.isAvailable()) {
-            var warmS by remember { mutableStateOf(prefs.getInt(helium314.keyboard.latin.voice.CarWarmLink.PREF, helium314.keyboard.latin.voice.CarWarmLink.DEFAULT_S)) }
+            var holdS by remember { mutableStateOf(prefs.getInt(helium314.keyboard.latin.voice.VoiceInput.CAR_HOLD_PREF, 0)) }
             Column {
-                Text(stringResource(R.string.car_warm_title), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.car_warm_summary), style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.car_hold_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.car_hold_summary), style = MaterialTheme.typography.bodySmall)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    for (sec in helium314.keyboard.latin.voice.CarWarmLink.CHOICES_S) {
-                        androidx.compose.material3.RadioButton(selected = warmS == sec, onClick = {
-                            warmS = sec; prefs.edit().putInt(helium314.keyboard.latin.voice.CarWarmLink.PREF, sec).apply()
-                        }, modifier = Modifier.testTag("car_warm_$sec"))
-                        Text(if (sec == 0) stringResource(R.string.car_warm_off) else stringResource(R.string.car_warm_seconds, sec))
+                    for (sec in helium314.keyboard.latin.voice.VoiceInput.CAR_HOLD_CHOICES) {
+                        androidx.compose.material3.RadioButton(selected = holdS == sec, onClick = {
+                            holdS = sec; prefs.edit().putInt(helium314.keyboard.latin.voice.VoiceInput.CAR_HOLD_PREF, sec).apply()
+                        }, modifier = Modifier.testTag("car_hold_$sec"))
+                        Text(if (sec == 0) stringResource(R.string.car_hold_off) else stringResource(R.string.car_warm_seconds, sec))
                     }
                 }
             }
             HorizontalDivider()
         }
-        // stage 5g-21: the probe "mute the radio with a call" (on by default, only with a car-like device)
+        // stage 5g-21: the probe "mute the radio with a call"; stage 5g-27: four modes (the call via the car by default)
         if (helium314.keyboard.latin.voiceapi.VoiceApiPrefs.isAvailable()) {
-            var mute by remember { mutableStateOf(helium314.keyboard.latin.voice.CarMuteCall.enabled(prefs)) }
-            Row(Modifier.fillMaxWidth().clickable { mute = !mute; prefs.edit().putBoolean(helium314.keyboard.latin.voice.CarMuteCall.PREF, mute).apply() },
-                verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.car_mute_call_title), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.car_mute_call_summary), style = MaterialTheme.typography.bodySmall)
+            var mode by remember { mutableStateOf(helium314.keyboard.latin.voice.CarMuteMode.read(prefs)) }
+            Column {
+                Text(stringResource(R.string.car_mute_call_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.car_mode_summary), style = MaterialTheme.typography.bodySmall)
+                for (m in helium314.keyboard.latin.voice.CarMuteMode.choices) {
+                    Row(Modifier.fillMaxWidth().clickable { mode = m; helium314.keyboard.latin.voice.CarMuteMode.write(prefs, m) },
+                        verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.material3.RadioButton(selected = mode == m, onClick = { mode = m; helium314.keyboard.latin.voice.CarMuteMode.write(prefs, m) },
+                            modifier = Modifier.testTag("car_mode_${m.key}"))
+                        Text(stringResource(helium314.keyboard.latin.voice.VoiceInput.carModeName(m)))
+                    }
                 }
-                androidx.compose.material3.Switch(checked = mute, onCheckedChange = { mute = it; prefs.edit().putBoolean(helium314.keyboard.latin.voice.CarMuteCall.PREF, it).apply() })
             }
             HorizontalDivider()
         }

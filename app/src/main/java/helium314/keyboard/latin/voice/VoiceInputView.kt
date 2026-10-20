@@ -54,6 +54,8 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
         fun onOpenJournal() {}
         /** stage 5g-5: OpenAI could not be reached: the link opens the AI screen with the proxy and the check */
         fun onOpenConnection() {}
+        /** stage 5g-27: the line of the mode of muting the car's radio (developer mode): the next mode */
+        fun onCarMode() {}
     }
 
     private val palette = PanelPalette.from(colors)
@@ -64,6 +66,8 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
     private val partialText = TextView(context)
     private val noticeText = TextView(context)
     private val signalText = TextView(context)
+    /** stage 5g-27: "🚗 Mode: call via the car" (developer mode, a car there): a tap switches to the next mode */
+    private val carModeText = TextView(context)
     /** the link and the long press open the journal only in the developer mode (stage 5g-4) */
     private var journalAllowed = false
     /** "Journal" under an error: a long press on the error text does the same */
@@ -118,7 +122,7 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
 
         info.orientation = LinearLayout.VERTICAL
         info.gravity = Gravity.CENTER_HORIZONTAL
-        for (t in listOf(partialText, noticeText, signalText, retryPhraseText)) {
+        for (t in listOf(partialText, noticeText, signalText, retryPhraseText, carModeText)) {
             t.gravity = Gravity.CENTER
             t.setTextColor(palette.grey)
             t.includeFontPadding = false
@@ -134,6 +138,12 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
         retryPhraseText.setTextColor(palette.goldText)
         retryPhraseText.visibility = View.GONE
         retryPhraseText.setOnClickListener { actions.onRetryPhrase() }
+        carModeText.setTextColor(palette.goldText)
+        carModeText.maxLines = 1
+        carModeText.ellipsize = TextUtils.TruncateAt.END
+        carModeText.visibility = View.GONE
+        carModeText.minHeight = (40 * resources.displayMetrics.density).toInt()
+        carModeText.setOnClickListener { actions.onCarMode() }
         journalLink.gravity = Gravity.CENTER
         journalLink.setTextColor(palette.goldText)
         journalLink.paintFlags = journalLink.paintFlags or Paint.UNDERLINE_TEXT_FLAG
@@ -437,6 +447,14 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
     fun bluetoothShown() = art.bluetooth
     /** for tests: the badge is dimmed, "connecting" (stage 5g-5) */
     fun bluetoothConnecting() = art.bluetooth && art.bluetoothDim
+
+    /** stage 5g-27: the line of the mode of muting the car (null: hidden) */
+    fun setCarMode(label: String?) {
+        carModeText.text = label ?: ""
+        carModeText.visibility = if (label == null) View.GONE else View.VISIBLE
+    }
+    /** for tests */
+    fun carModeLine(): String? = carModeText.takeIf { it.visibility == View.VISIBLE }?.text?.toString()
 
     /**
      * stage 5g-26: the "quiet call" holds the car's music paused: a small car badge at the lower left of the circle

@@ -1817,4 +1817,18 @@ New dictionary:
     <string name="photo_pick_panel">📷 Insert a screenshot or photo</string>
     <string name="photo_pick_recent_first">The newest pictures come first</string>
     <string name="photo_pick_card">📷 Insert the new picture</string>
+    <!-- stage 5g-27 -->
+    <string name="car_mode_call_car">Call via the car</string>
+    <string name="car_mode_voice_command">Voice command</string>
+    <string name="car_mode_call_phone">Call on the phone (default)</string>
+    <string name="car_mode_off">No muting</string>
+    <string name="car_mode_line">🚗 %1$s</string>
+    <string name="car_mode_summary">How the music of the car radio is paused while you dictate. Call on the phone: the call sound stays on the phone (a short dip of 0.2–0.3 s, a quieter recording that the keyboard raises). Call via the car: the call sound goes to the car (the phone is deaf for about a second at the start, a louder recording).</string>
+    <!-- stage 5g-28 -->
+    <string name="car_hold_title">Keep the music paused after a phrase</string>
+    <string name="car_hold_summary">The call that pauses the car radio stays this long after a phrase, so the next phrase starts with the music already paused. 0: the music comes back right after the phrase.</string>
+    <string name="car_hold_off">0 (music back at once)</string>
+    <string name="car_mode_short_phone">Via the phone</string>
+    <string name="car_mode_short_car">Via the car</string>
+    <string name="car_mode_short_off">No pause</string>
 </resources>

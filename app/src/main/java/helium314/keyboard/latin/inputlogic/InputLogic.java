@@ -1818,6 +1818,13 @@ public final class InputLogic {
             mSuggestionStripViewAccessor.setSuggestions(SuggestedWords.getEmptyInstance());
             return;
         }
+        // swipe-5 (the owner: after a glide the right word flashed in the strip and was replaced): the result of a glide
+        // is final for its word; a later update of the strip as typing (a late answer of the AI dictionary, a refresh)
+        // never replaces it, until the next word or action starts (then the composer is no glide any more)
+        if (inputStyle == SuggestedWords.INPUT_STYLE_TYPING && mWordComposer.isBatchMode() && mWordComposer.isComposingWord()) {
+            helium314.keyboard.latin.glide.OpenGlide.StripLog.kept();
+            return;
+        }
 
         if (!mWordComposer.isComposingWord() && !settingsValues.mBigramPredictionEnabled) {
             mSuggestionStripViewAccessor.setNeutralSuggestionStrip();

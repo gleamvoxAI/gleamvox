@@ -185,15 +185,20 @@ class VoiceInput @JvmOverloads constructor(
         if (SensitiveInput.isSensitive(editorInfo) || !Settings.getValues().mVoiceInputInternal || !hasPermission() || !screenIsOn()) return
         // stage 5g-26: a known car: the "quiet call" that pauses its music is placed at the touch already (the radio needs
         // 0.5-1 s to react, and the route of the call settles before the words begin); it ends if no tap follows
-        if (muteSession?.endRequested != false && android.os.Build.VERSION.SDK_INT >= 26 && CarMuteCall.enabled(ime.prefs()) && knownCarConnected()) {
-            startMuteCall(fromTouch = true)
+        // stage 5g-27: in the mode of the settings (the call via the car by default)
+        val touchMode = CarMuteMode.read(ime.prefs())
+        val touchCar = if (touchMode != CarMuteMode.OFF && android.os.Build.VERSION.SDK_INT >= 26) knownCarTail() else null
+        if (muteSession?.endRequested != false && touchCar != null) {
+            startMuteCall(fromTouch = true, mode = touchMode, carTail = touchCar.ifEmpty { null })
             muteTouchPending = true
             handler.postDelayed(muteGiveUp, PreCapture.GIVE_UP_MS)
-        }
+        } else if (touchCar != null) takeHeldCall() // stage 5g-28: the held call goes on
         if (!(VoiceApiPrefs.isAvailable() && engineChoice(editorInfo).openAi)) return
         val prefs = ime.prefs()
-        preSourceType = VoiceApiPrefs.audioSource(prefs)
-        val a = AudioRecordSource(preSourceType, nonBlocking = true, effects = true)
+        // stage 5g-27: the car's channel comes up in this mode: the sound of the touch is taken from the built-in microphone
+        preBuiltIn = touchCar != null && touchMode.builtInMic
+        preSourceType = if (preBuiltIn) Loudness.SOURCE_CAMCORDER else VoiceApiPrefs.audioSource(prefs)
+        val a = AudioRecordSource(preSourceType, preferredDevice = if (preBuiltIn) AndroidHeadsetMic.builtInMic(ime) else null, nonBlocking = true, effects = true)
         preAudio = a
         pre = PreCapture(a)
         handler.postDelayed(preGiveUp, PreCapture.GIVE_UP_MS)
@@ -213,16 +218,20 @@ class VoiceInput @JvmOverloads constructor(
      * stage 5g-26: a Bluetooth device with a call input that is known to be a car (its class says so, or it once gave
      * speech as a car), and not marked "not a car": the quiet call may be placed at the touch
      */
-    private fun knownCarConnected(): Boolean = try {
+    /** stage 5g-27: the end of the address of the known car ("" if it has none), null: no known car */
+    private fun knownCarTail(): String? = try {
         val prefs = ime.prefs()
-        ime.getSystemService(android.media.AudioManager::class.java)?.getDevices(android.media.AudioManager.GET_DEVICES_INPUTS).orEmpty().any { d ->
-            if (!AndroidHeadsetMic.isHeadsetWithMicrophone(d.type)) return@any false
+        ime.getSystemService(android.media.AudioManager::class.java)?.getDevices(android.media.AudioManager.GET_DEVICES_INPUTS).orEmpty().firstOrNull { d ->
+            if (!AndroidHeadsetMic.isHeadsetWithMicrophone(d.type)) return@firstOrNull false
             val dev = helium314.keyboard.latin.voiceapi.AudioDevice(d.type, d.address ?: "")
             val key = MicRouting.key(dev)
             !NotCars.has(prefs, key) && (KnownCars.has(prefs, key) ||
                 CarDetect.info(ime, dev.tail, d.productName).let { CarDetect.kind(it.major, it.deviceClass) } == CarDetect.Kind.CAR)
-        }
-    } catch (e: Exception) { false }
+        }?.let { helium314.keyboard.latin.voiceapi.AudioDevice(it.type, it.address ?: "").tail ?: "" }
+    } catch (e: Exception) { null }
+
+    /** stage 5g-27: the sound of the touch came from the built-in microphone (CAMCORDER) */
+    private var preBuiltIn = false
 
     private fun discardPre(why: String) {
         handler.removeCallbacks(preGiveUp)
@@ -373,6 +382,8 @@ class VoiceInput @JvmOverloads constructor(
     /** the system asks the keyboard to be shown for a field (also right after the permission dialog) */
     fun onInputViewStarted(editorInfo: EditorInfo?) {
         warm.onShown()
+        // stage 5g-28: the phone account of the call is registered ahead (one step less at the touch)
+        if (android.os.Build.VERSION.SDK_INT >= 26 && CarMuteCall.enabled(ime.prefs())) CarMuteCall.prepare(ime)
         if (interruption.hasSomethingToSay) handler.post { showInterruptionResult(editorInfo) }
         if (!autoStart.isPending) return
         val action = autoStart.onInputViewStarted(
@@ -569,12 +580,18 @@ class VoiceInput @JvmOverloads constructor(
         // stage 5g-26 (4436: the warm link after a phrase made the music come back and the "call" come again and hang):
         // where the quiet call is used there is no warm link and no car in a pause: the phone records the whole session,
         // one call from the touch to the end
-        val muteWanted = carDevice != null && CarMuteCall.enabled(prefs) && android.os.Build.VERSION.SDK_INT >= 26
+        // stage 5g-27: the mode of the settings; the detectors know a car is there (in every mode)
+        val mode = CarMuteMode.read(prefs)
+        carDictation = carDevice != null
+        val muteWanted = carDevice != null && mode != CarMuteMode.OFF && android.os.Build.VERSION.SDK_INT >= 26
+        carBuiltIn = muteWanted && mode.builtInMic
+        attempt?.let { a -> if (carDevice != null) a.carMode = mode.key + (if (carBuiltIn) ", recording: built-in microphone (CAMCORDER)" else "") }
         if (!muteWanted && muteSession != null) endMuteCall("no car at the tap")
         if (muteWanted) {
             warm.release("quiet call used")
             carPlan = MicRouting.CarPlan.PHONE_ONLY
-            if (muteSession?.endRequested != false) startMuteCall(fromTouch = false) // at once, not at the first frame
+            if (muteSession?.endRequested != false) startMuteCall(fromTouch = false, mode = mode, carTail = carDevice?.tail) // at once, not at the first frame
+            else takeHeldCall() // stage 5g-28
         }
         // stage 5g-21: the car's link is warm (a phrase a moment ago): the car records at once, the probation as in 5g-20;
         // stage 5g-22: only if the link is really up (it went down when the car connected its media in 4401)
@@ -612,6 +629,10 @@ class VoiceInput @JvmOverloads constructor(
         return AndroidHeadsetMic(ime, info, modeAfterLink = headsetCar && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
             .also { carMic = it.takeIf { m -> m.modeAfterLink } }
     }
+
+    /** stage 5g-27: a car is there (the detectors hear a raised copy, a longer pause); the phone records with its built-in microphone */
+    private var carDictation = false
+    private var carBuiltIn = false
 
     /** stage 5g-25: the class of a Bluetooth device with a call input was unknown: the permission is asked after this dictation */
     private var askBluetoothClass = false
@@ -658,10 +679,12 @@ class VoiceInput @JvmOverloads constructor(
      * otherwise nothing is chosen, exactly as in 4351); read without waiting while the headset is on probation
      */
     private fun phoneSources(headsetTried: Boolean): (Int) -> PcmSource {
-        val builtIn = if (headsetTried && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) AndroidHeadsetMic.builtInMic(ime) else null
+        // stage 5g-27: in the modes that bring up the car's channel the phone records with its built-in microphone too
+        val wantBuiltIn = headsetTried || carBuiltIn
+        val builtIn = if (wantBuiltIn && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) AndroidHeadsetMic.builtInMic(ime) else null
         // stage 5g-6: the noise suppressor and the gain control of the phone, where it has them
         // stage 5g-24: the first source of a recording is the one opened at the touch, if there is one
-        return { src -> (if (!headsetTried) takePre(src, builtIn == null) else null.also { discardPre("headset tried") })
+        return { src -> (if (!headsetTried) takePre(src, if (carBuiltIn) preBuiltIn else builtIn == null) else null.also { discardPre("headset tried") })
             ?: AudioRecordSource(src, preferredDevice = builtIn, nonBlocking = true, effects = true).also { s -> lastPhoneSource = s } }
     }
 
@@ -760,6 +783,24 @@ class VoiceInput @JvmOverloads constructor(
      */
     private val sileroStream: () -> SpeechProbability? = { SileroVad.stream() }
 
+    /** stage 5g-27: the line of the mode on the panel: only in the developer mode and with a car there */
+    private fun carModeLabel(): String? {
+        if (!carDictation || !helium314.keyboard.latin.ai.DeveloperMode.on(ime.prefs())) return null
+        val ctx = VoiceInputView.labelContextFor(ime, currentLocale())
+        // stage 5g-28 (the owner: the line did not fit and ran over): "🚗 Через телефон" and so on, one line
+        return ctx.getString(R.string.car_mode_line, ctx.getString(carModeShort(CarMuteMode.read(ime.prefs()))))
+    }
+
+    /** stage 5g-27: the next mode from the next phrase (the call of this one stays as it is) */
+    override fun onCarMode() {
+        val prefs = ime.prefs()
+        CarMuteMode.write(prefs, CarMuteMode.next(CarMuteMode.read(prefs)))
+        panel?.setCarMode(carModeLabel())
+    }
+
+    /** stage 5g-27: the source of the settings, or CAMCORDER (the built-in microphone) where the car's channel comes up */
+    private fun recordingSource(prefs: android.content.SharedPreferences) = if (carBuiltIn) Loudness.SOURCE_CAMCORDER else VoiceApiPrefs.audioSource(prefs)
+
     private fun continuousOpenAiEngine(): ContinuousSpeechEngine {
         SileroVad.preload(ime)
         val prefs = ime.prefs()
@@ -769,8 +810,8 @@ class VoiceInput @JvmOverloads constructor(
         val continuous = PcmRecorder.Continuous(maxPhraseMs = minOf(VoiceApiPrefs.maxSeconds(prefs) * 1000L, PcmRecorder.CHUNK_MS),
             maxSpeechMs = VoiceApiUsage(prefs).remainingMs())
         return ContinuousSpeechEngine(
-            recorderFactory = { l -> val h = headsetMic(true); PcmRecorder(phoneSources(h != null), VoiceApiPrefs.audioSource(prefs), sessionMs, l, { handler.post(it) },
-                detectorFactory = { SpeechEndDetector(endSilenceMs = VoiceApiPrefs.endPauseMs(prefs), noSpeechTimeoutMs = silenceMs, silero = sileroStream) },
+            recorderFactory = { l -> val h = headsetMic(true); PcmRecorder(phoneSources(h != null), recordingSource(prefs), sessionMs, l, { handler.post(it) },
+                detectorFactory = { SpeechEndDetector(endSilenceMs = VoiceApiPrefs.endPauseMs(prefs), noSpeechTimeoutMs = silenceMs, silero = sileroStream, car = carDictation) },
                 continuous = continuous, headset = h, headsetEager = h != null && headsetEager, headsetCar = h != null && headsetCar,
                 phoneSourceWhileHeadset = Loudness.SOURCE_CAMCORDER.takeIf { h != null }, probe = carProbe(h),
                 headsetAfterPhrase = h != null && headsetCar && !onWarm, muteStartMs = muteStartMs()).also { activeRecorder = it; lastRecorder = it } },
@@ -780,7 +821,7 @@ class VoiceInput @JvmOverloads constructor(
             post = { handler.post(it) },
             onResult = { r, sentMs -> onOpenAiResult(r, sentMs) },
             sessionMs = sessionMs,
-            onSourceWorked = { source -> if (VoiceApiPrefs.audioSource(prefs) != source) VoiceApiPrefs.setAudioSource(prefs, source) },
+            onSourceWorked = { source -> if (!carBuiltIn && VoiceApiPrefs.audioSource(prefs) != source) VoiceApiPrefs.setAudioSource(prefs, source) },
         )
     }
 
@@ -791,8 +832,8 @@ class VoiceInput @JvmOverloads constructor(
         // never longer than the minutes left this month
         val recordMs = minOf(VoiceApiPrefs.maxSeconds(prefs) * 1000L, usage.remainingMs())
         return OpenAiSpeechEngine(
-            recorderFactory = { l -> val h = headsetMic(false); PcmRecorder(phoneSources(h != null), VoiceApiPrefs.audioSource(prefs), recordMs, l, { handler.post(it) },
-                detectorFactory = { SpeechEndDetector(endSilenceMs = VoiceApiPrefs.endPauseMs(prefs), silero = sileroStream) }, headset = h,
+            recorderFactory = { l -> val h = headsetMic(false); PcmRecorder(phoneSources(h != null), recordingSource(prefs), recordMs, l, { handler.post(it) },
+                detectorFactory = { SpeechEndDetector(endSilenceMs = VoiceApiPrefs.endPauseMs(prefs), silero = sileroStream, car = carDictation) }, headset = h,
                 headsetEager = h != null && headsetEager, headsetCar = h != null && headsetCar,
                 phoneSourceWhileHeadset = Loudness.SOURCE_CAMCORDER.takeIf { h != null }, probe = carProbe(h),
                 chunkMs = PcmRecorder.CHUNK_MS, muteStartMs = muteStartMs()).also { activeRecorder = it; lastRecorder = it } },
@@ -802,7 +843,7 @@ class VoiceInput @JvmOverloads constructor(
             post = { handler.post(it) },
             onResult = { r, sentMs -> onOpenAiResult(r, sentMs) },
             recordMs = recordMs,
-            onSourceWorked = { source -> if (VoiceApiPrefs.audioSource(prefs) != source) VoiceApiPrefs.setAudioSource(prefs, source) },
+            onSourceWorked = { source -> if (!carBuiltIn && VoiceApiPrefs.audioSource(prefs) != source) VoiceApiPrefs.setAudioSource(prefs, source) },
         )
     }
 
@@ -1110,7 +1151,8 @@ class VoiceInput @JvmOverloads constructor(
             attempt?.let { takeFocus(it) }
             focus.acquire()
         } else {
-            endMuteCall(when (state) { VoiceState.ERROR -> "error"; VoiceState.IDLE -> "cancel"; else -> "phrase end" }) // stage 5g-21: the phrase is recorded: the call ends
+            // stage 5g-21: the phrase is recorded: the call ends; stage 5g-28: unless it is held for the next phrase (afterDictation)
+            if (state == VoiceState.ERROR || holdSeconds() == 0) endMuteCall(when (state) { VoiceState.ERROR -> "error"; VoiceState.IDLE -> "cancel"; else -> "phrase end" })
             if (focus.held) resumeAttempt = attempt // the music check comes 0.8 s later, often after the entry was written
             focus.release()
         }
@@ -1159,6 +1201,7 @@ class VoiceInput @JvmOverloads constructor(
                 p.setMic(micHeadset, micFellBack, micMissing)
                 p.setBluetoothConnecting(micConnecting, headsetCar)
                 p.setCarPaused(muteSession?.let { !it.endRequested } == true) // stage 5g-26: "🚗 music paused" while the call holds
+                p.setCarMode(carModeLabel()) // stage 5g-27: the mode, a tap switches (developer mode)
                 p.setNotice(notice, noticeSwitched)
                 p.setSignal(signalPeak, signalSource)
                 p.update(state, partial, error)
@@ -1266,10 +1309,14 @@ class VoiceInput @JvmOverloads constructor(
     /** stage 5g-22: the recorder of this dictation until it is in the journal (activeRecorder goes at DONE already) */
     private var lastRecorder: PcmRecorder? = null
 
-    private fun startMuteCall(fromTouch: Boolean = false) {
+    private fun startMuteCall(fromTouch: Boolean = false, mode: CarMuteMode = CarMuteMode.read(ime.prefs()), carTail: String? = null) {
         if (android.os.Build.VERSION.SDK_INT < 26) return
-        val s = CarMuteCall.start(ime)
+        // stage 5g-28: the fast path: the call device and the call mode are set by us at once, before Telecom does it
+        val fast = if (mode == CarMuteMode.CALL_ON_PHONE) setFastPath() else null
+        val s = CarMuteCall.start(ime, mode, carTail)
         s.fromTouch = fromTouch
+        s.fastPath = fast
+        watchCallMode(s)
         muteSession = s
         panel?.setCarPaused(true)
         handler.removeCallbacks(muteWatchdog)
@@ -1282,6 +1329,46 @@ class VoiceInput @JvmOverloads constructor(
             if (s.sco != true) s.sco = sco
             s.log("at $at ms: mode ${am?.mode}, communication device type $type")
         }, at)
+    }
+
+    /**
+     * stage 5g-27: did the pause hold to the end: every 250 ms while the call (or the voice command) runs, a change of the
+     * audio mode or of the call device goes to the journal; the audio mode back to normal after it was a call means the
+     * radio may play again (4449: "mode 0" and the music came back in the middle of a phrase)
+     */
+    private fun watchCallMode(s: CarMuteCall.Session) {
+        var lastMode: Int? = null; var lastType: Int? = null; var wasCall = false
+        // stage 5g-28: the exact moment of the call mode (the owner: the pause of the radio follows it), not every 250 ms
+        val am0 = ime.getSystemService(android.media.AudioManager::class.java)
+        var listener: android.media.AudioManager.OnModeChangedListener? = null
+        if (android.os.Build.VERSION.SDK_INT >= 31 && am0 != null) {
+            val l = android.media.AudioManager.OnModeChangedListener { mode ->
+                val ms = System.currentTimeMillis() - s.startedAt
+                s.log("mode $mode at $ms ms")
+                if ((mode == android.media.AudioManager.MODE_IN_COMMUNICATION || mode == android.media.AudioManager.MODE_IN_CALL) && s.inCallAt < 0)
+                    s.inCallAt = System.currentTimeMillis()
+            }
+            try { am0.addOnModeChangedListener(ime.mainExecutor, l); listener = l } catch (_: Exception) { }
+            val now = am0.mode
+            if ((now == android.media.AudioManager.MODE_IN_COMMUNICATION || now == android.media.AudioManager.MODE_IN_CALL) && s.inCallAt < 0)
+                s.inCallAt = System.currentTimeMillis()
+        }
+        val r = object : Runnable {
+            override fun run() {
+                if (s.endRequested || muteSession !== s) {
+                    if (android.os.Build.VERSION.SDK_INT >= 31) listener?.let { try { am0?.removeOnModeChangedListener(it) } catch (_: Exception) { } }
+                    return
+                }
+                val am = ime.getSystemService(android.media.AudioManager::class.java)
+                val mode = am?.mode
+                val type = if (android.os.Build.VERSION.SDK_INT >= 31) try { am?.communicationDevice?.type } catch (e: Exception) { null } else null
+                if (mode != lastMode || type != lastType) { s.log("mode $mode, call device type $type"); lastMode = mode; lastType = type }
+                if (mode == android.media.AudioManager.MODE_IN_COMMUNICATION || mode == android.media.AudioManager.MODE_IN_CALL) wasCall = true
+                else if (wasCall && mode == android.media.AudioManager.MODE_NORMAL && s.brokeAt < 0) s.brokeAt = System.currentTimeMillis() - s.startedAt
+                handler.postDelayed(this, 250)
+            }
+        }
+        handler.post(r)
     }
 
     /**
@@ -1315,9 +1402,57 @@ class VoiceInput @JvmOverloads constructor(
     private fun endMuteCall(by: String) {
         val s = muteSession ?: return
         handler.removeCallbacks(muteGiveUp); muteTouchPending = false
+        handler.removeCallbacks(holdEnd); holdUntil = 0
         panel?.setCarPaused(false)
         if (s.endRequested) return
         CarMuteCall.end(by)
+        releaseFastPath()
+    }
+
+    // ---- stage 5g-28: the fast path and the call held after a phrase ----
+
+    /** the call device and the call mode were set by us (given back when the call ends) */
+    private var fastPathSet = false
+
+    /**
+     * stage 5g-28 (journal 4452: the call mode came after ~300 ms or after ~850 ms; the slow ones were those where Telecom
+     * first put the call on Bluetooth and it was moved to the earpiece): at the touch the keyboard itself makes the
+     * earpiece the call device and switches to the call mode, before the call is placed. Returns what was done (journal).
+     */
+    private fun setFastPath(): String? {
+        if (android.os.Build.VERSION.SDK_INT < 31) return null
+        val am = ime.getSystemService(android.media.AudioManager::class.java) ?: return null
+        return try {
+            val earpiece = am.availableCommunicationDevices.firstOrNull { it.type == android.media.AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
+            val onEarpiece = earpiece != null && am.setCommunicationDevice(earpiece)
+            am.mode = android.media.AudioManager.MODE_IN_COMMUNICATION
+            fastPathSet = true
+            "earpiece ${if (onEarpiece) "set" else "not set"}, call mode ${if (am.mode == android.media.AudioManager.MODE_IN_COMMUNICATION) "set" else "refused"}"
+        } catch (e: Exception) { "failed ${e.javaClass.simpleName}" }
+    }
+
+    private fun releaseFastPath() {
+        if (!fastPathSet || android.os.Build.VERSION.SDK_INT < 31) return
+        fastPathSet = false
+        val am = ime.getSystemService(android.media.AudioManager::class.java) ?: return
+        try { am.clearCommunicationDevice(); am.mode = android.media.AudioManager.MODE_NORMAL } catch (_: Exception) { }
+    }
+
+    /** the call is held after a phrase until this moment (0: not held) */
+    private var holdUntil = 0L
+    private val holdEnd = Runnable { if (!controller.isActive) { endMuteCall("hold over"); CarMuteCall.clear(); muteSession = null } }
+
+    /** 0 (default: the music comes back after the phrase), 15 or 30 s: the call stays for the next phrase */
+    private fun holdSeconds() = ime.prefs().getInt(CAR_HOLD_PREF, 0).coerceIn(0, 60)
+
+    /** a held call is taken over by the next dictation (its pause stands already) */
+    private fun takeHeldCall() {
+        if (holdUntil == 0L) return
+        handler.removeCallbacks(holdEnd); holdUntil = 0
+        muteSession?.log("taken over by the next dictation")
+        handler.removeCallbacks(muteWatchdog)
+        handler.postDelayed(muteWatchdog, WATCHDOG_MS)
+        panel?.setCarPaused(true)
     }
 
     /**
@@ -1328,7 +1463,7 @@ class VoiceInput @JvmOverloads constructor(
         override fun run() {
             val s = muteSession ?: return
             if (s.endRequested) return
-            val idle = !controller.isActive && !muteTouchPending && !interruption.isRunning
+            val idle = !controller.isActive && !muteTouchPending && !interruption.isRunning && System.currentTimeMillis() >= holdUntil
             if (idle) { endMuteCall("watchdog"); return }
             if (System.currentTimeMillis() - s.startedAt > MAX_CALL_MS) { endMuteCall("watchdog (too long)"); return }
             handler.postDelayed(this, WATCHDOG_MS)
@@ -1346,14 +1481,26 @@ class VoiceInput @JvmOverloads constructor(
         lastRecorder = null
         handler.removeCallbacks(muteWatchdog)
         panel?.setCarPaused(false)
+        val holdS = holdSeconds()
+        val held = muteSession?.let { m -> holdS > 0 && !m.endRequested && m.mode != CarMuteMode.OFF } == true
         muteSession?.let { m ->
+            if (held) {
+                // stage 5g-28: the call stays for the next phrase (it starts with the pause standing already)
+                a?.carMute = m.summary(rec?.earlyPeakDbfs) + ", held $holdS s for the next phrase"
+                a?.carMuteSystem = m.system()
+                holdUntil = System.currentTimeMillis() + holdS * 1000L
+                handler.removeCallbacks(holdEnd)
+                handler.postDelayed(holdEnd, holdS * 1000L)
+                return@let
+            }
             CarMuteCall.end("phrase end")
+            releaseFastPath()
             a?.carMute = m.summary(rec?.earlyPeakDbfs)
             a?.carMuteSystem = m.system()
             CarMuteCall.clear()
             a?.let { watchAfterCall(it, m) }
         }
-        muteSession = null
+        if (!held) muteSession = null
         val inserted = a?.inserted == "yes" || a?.inserted == "later"
         val holdMs = CarWarmLink.holdMs(ime.prefs())
         if (onWarm) {
@@ -1372,6 +1519,7 @@ class VoiceInput @JvmOverloads constructor(
             }
         }
         onWarm = false; warmCandidate = null; carPlan = MicRouting.CarPlan.NONE
+        carDictation = false; carBuiltIn = false // stage 5g-27
     }
 
     /** stage 5g-20: the pieces and retries of this dictation, for the journal */
@@ -1428,6 +1576,23 @@ class VoiceInput @JvmOverloads constructor(
     }
 
     companion object {
+        /** stage 5g-28: hold the call after a phrase for 0 / 15 / 30 s (0: the music comes back at once) */
+        const val CAR_HOLD_PREF = "aikb_car_hold_s"
+        val CAR_HOLD_CHOICES = intArrayOf(0, 15, 30)
+        /** stage 5g-27: the name of a mode of muting the car's radio */
+        fun carModeName(m: CarMuteMode) = when (m) {
+            CarMuteMode.CALL_VIA_CAR -> R.string.car_mode_call_car
+            CarMuteMode.VOICE_COMMAND -> R.string.car_mode_voice_command
+            CarMuteMode.CALL_ON_PHONE -> R.string.car_mode_call_phone
+            CarMuteMode.OFF -> R.string.car_mode_off
+        }
+        /** stage 5g-28: the short name of a mode on the voice panel */
+        fun carModeShort(m: CarMuteMode) = when (m) {
+            CarMuteMode.CALL_ON_PHONE -> R.string.car_mode_short_phone
+            CarMuteMode.CALL_VIA_CAR -> R.string.car_mode_short_car
+            CarMuteMode.VOICE_COMMAND -> R.string.car_mode_voice_command
+            CarMuteMode.OFF -> R.string.car_mode_short_off
+        }
         /** stage 5g-26: the watchdog of the quiet call looks every second; a call never lasts longer than 30 min */
         const val WATCHDOG_MS = 1_000L
         const val MAX_CALL_MS = 30 * 60_000L

@@ -1051,4 +1051,18 @@
     <string name="photo_pick_panel">📷 Вставить скриншот или фото</string>
     <string name="photo_pick_recent_first">Последние снимки — первыми</string>
     <string name="photo_pick_card">📷 Вставить новый снимок</string>
+    <!-- stage 5g-27 -->
+    <string name="car_mode_call_car">Звонок через машину</string>
+    <string name="car_mode_voice_command">Голосовая команда</string>
+    <string name="car_mode_call_phone">Звонок на телефоне (по умолчанию)</string>
+    <string name="car_mode_off">Без глушения</string>
+    <string name="car_mode_line">🚗 %1$s</string>
+    <string name="car_mode_summary">Как ставить на паузу музыку магнитолы во время диктовки. Звонок на телефоне: звук звонка остаётся на телефоне (короткий провал 0,2–0,3 с, запись тише — клавиатура её поднимает). Звонок через машину: звук звонка уходит в машину (телефон глохнет примерно на секунду в начале, запись громче).</string>
+    <!-- stage 5g-28 -->
+    <string name="car_hold_title">Держать музыку на паузе после фразы</string>
+    <string name="car_hold_summary">Звонок, который ставит музыку магнитолы на паузу, держится столько после фразы, и следующая фраза начинается уже с паузой. 0 — музыка возвращается сразу после фразы.</string>
+    <string name="car_hold_off">0 (музыка сразу)</string>
+    <string name="car_mode_short_phone">Через телефон</string>
+    <string name="car_mode_short_car">Через машину</string>
+    <string name="car_mode_short_off">Без паузы</string>
 </resources>

@@ -155,6 +155,8 @@ class VoiceAttempt(val at: Long) {
     var keptForRetry: Boolean? = null
     /** stage 5g-21: the probe "mute the radio with a call": its summary and what the system did (names and numbers) */
     var carMute: String? = null
+    /** stage 5g-27: the mode of muting the radio of this dictation (and the microphone it records with) */
+    var carMode: String? = null
     var carMuteSystem: String? = null
     /** stage 5g-12: on probation the same peak in both microphones on [sameFrames] of [bothFrames] frames */
     var sameFrames: Int? = null
@@ -179,7 +181,7 @@ class VoiceAttempt(val at: Long) {
             "probeMs" to probeMs, "probeFrames" to probeFrames, "strike" to strike, "gapMs" to gapMs, "gapOfMs" to gapOfMs, "gapPeakDb" to gapPeakDb,
             "probe" to probe, "filledMs" to filledMs, "numbers" to numbers, "vad" to vad, "probAvg" to probAvg, "probMax" to probMax, "vadThreshold" to vadThreshold,
             "car" to car, "playbackConfigs" to playbackConfigs, "focusAtMs" to focusAtMs, "chunks" to chunks, "retried" to retried,
-            "keptForRetry" to keptForRetry, "carMute" to carMute, "carMuteSystem" to carMuteSystem,
+            "keptForRetry" to keptForRetry, "carMute" to carMute, "carMode" to carMode, "carMuteSystem" to carMuteSystem,
             "sameFrames" to sameFrames, "bothFrames" to bothFrames, "phoneMs" to phoneMs, "headsetRecMs" to headsetRecMs, "speechPercent" to speechPercent, "noiseDb" to noiseDb,
             "noisePhrases" to noisePhrases, "effects" to effects, "startInfo" to startInfo, "earlyLevels" to earlyLevels)
         for ((k, v) in fields) when (v) {
@@ -199,7 +201,7 @@ class VoiceAttempt(val at: Long) {
         started?.takeIf { it }?.let { "recording" + (source?.let { s -> " $s" } ?: "") + (mic?.let { m -> " ($m)" } ?: "") },
         firstFrameMs?.let { "first sound after $it ms" },
         startInfo?.let { "start: $it" },
-        earlyLevels?.let { "levels 0–800 ms: $it" },
+        earlyLevels?.let { "levels 0–2000 ms by 100 ms: $it" },
         headsetMs?.let { "headset tried $it ms" },
         btDevices?.let { "bluetooth: $it" },
         micReason?.let { "microphone: $it" },
@@ -211,6 +213,7 @@ class VoiceAttempt(val at: Long) {
         musicPlaying?.let { "playback before: ${if (it) "yes" else "no"}" + (playbackConfigs?.let { c -> " (configs $c)" } ?: "") +
             ", focus " + (if (focusTaken == true) "taken" + (focusAtMs?.let { f -> " at $f ms" } ?: "") else "not taken") },
         car?.let { "car: $it" },
+        carMode?.let { "car mode: $it" },
         carMute?.let { "car mute: $it" },
         carMuteSystem?.let { "car mute system: $it" },
         chunks?.let { "chunks $it, retried ${retried ?: 0}, kept for retry ${if (keptForRetry == true) "yes" else "no"}" },
@@ -272,7 +275,7 @@ class VoiceAttempt(val at: Long) {
                 probe = s("probe"); filledMs = l("filledMs")
                 numbers = i("numbers"); vad = s("vad"); probAvg = i("probAvg"); probMax = i("probMax"); vadThreshold = i("vadThreshold")
                 car = s("car"); playbackConfigs = i("playbackConfigs"); focusAtMs = l("focusAtMs"); chunks = i("chunks")
-                retried = i("retried"); keptForRetry = b("keptForRetry"); carMute = s("carMute"); carMuteSystem = s("carMuteSystem")
+                retried = i("retried"); keptForRetry = b("keptForRetry"); carMute = s("carMute"); carMode = s("carMode"); carMuteSystem = s("carMuteSystem")
                 sameFrames = i("sameFrames"); bothFrames = i("bothFrames"); phoneMs = l("phoneMs"); headsetRecMs = l("headsetRecMs")
                 speechPercent = i("speechPercent"); noiseDb = i("noiseDb"); noisePhrases = i("noisePhrases"); effects = s("effects")
             }

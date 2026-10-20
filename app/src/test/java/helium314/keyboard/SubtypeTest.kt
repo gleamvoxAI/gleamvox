@@ -12,6 +12,7 @@ import helium314.keyboard.latin.utils.LayoutType
 import helium314.keyboard.latin.utils.POPUP_KEYS_LAYOUT
 import helium314.keyboard.latin.utils.SubtypeSettings
 import helium314.keyboard.latin.utils.SubtypeUtilsAdditional
+import helium314.keyboard.latin.utils.locale
 import helium314.keyboard.latin.utils.prefs
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -67,5 +68,26 @@ class SubtypeTest {
         SubtypeUtilsAdditional.changeAdditionalSubtype(to, toNew, latinIME)
         assertEquals(emptyList(), SubtypeSettings.getAdditionalSubtypes().map { it.toSettingsSubtype() })
         assertEquals(from.toSettingsSubtype(), SubtypeSettings.getEnabledSubtypes(false).single().toSettingsSubtype())
+    }
+
+    /** ux-11: a clean install: the system languages and English (US), the language key at once with 2+ languages */
+    @Test fun cleanInstallHasSystemLanguagesAndEnglish() {
+        latinIME.prefs().edit().remove(Settings.PREF_ENABLED_SUBTYPES).apply()
+        SubtypeSettings.reloadEnabledSubtypes(latinIME) // other tests of this class enabled some in memory
+        fun defaults(vararg tags: String): List<String> {
+            SubtypeSettings.setSystemLocalesForTest(tags.map { it.constructLocale() })
+            return SubtypeSettings.getEnabledSubtypes(true).map { it.locale().toLanguageTag() }
+        }
+        assertEquals(listOf("ru", "en-US"), defaults("ru"), "a Russian phone: Russian and English")
+        assertEquals(listOf("en-US"), defaults("en-US"), "an English phone: only English, nothing forced on it")
+        assertEquals(listOf("ru", "en-US"), defaults("ru", "en-US"), "both: no duplicate")
+        assertEquals(listOf("ru", "en-GB"), defaults("ru", "en-GB"), "any English counts as English")
+        assertEquals(listOf("de", "en-US"), defaults("de"), "a German phone: German and English")
+        assertEquals(listOf("ru", "en-US"), defaults("ru", "ru"), "no duplicate languages")
+        // the language key: on by default; settings of the person are kept
+        assertTrue(helium314.keyboard.latin.settings.Defaults.PREF_SHOW_LANGUAGE_SWITCH_KEY)
+        // existing settings (the person chose only Spanish): nothing is added
+        SubtypeSettings.addEnabledSubtype(latinIME.prefs(), SubtypeSettings.getResourceSubtypesForLocale("es".constructLocale()).first())
+        assertEquals(listOf("es"), SubtypeSettings.getEnabledSubtypes(true).map { it.locale().language })
     }
 }

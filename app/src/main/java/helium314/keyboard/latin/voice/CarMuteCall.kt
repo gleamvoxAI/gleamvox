@@ -30,10 +30,43 @@ import androidx.annotation.RequiresApi
  *
  * All official APIs; the state of the call and of the route go to [Session.events] (for the journal, names only).
  */
+/**
+ * Stage 5g-27 (4449 in the car F0: the "call on the phone" let the radio take its music back after 2–4 s, mode 0): how
+ * the music of the radio is paused while dictating, chosen in the developer mode and on the voice panel. The journal
+ * says the mode and what happened.
+ */
+enum class CarMuteMode(val key: String) {
+    /** a self-managed call whose sound stays on Bluetooth, as the system wants it: the radio holds its music (default) */
+    CALL_VIA_CAR("call_car"),
+    /** the voice command of the hands-free profile (BVRA, as the Google Assistant does): many radios pause for it */
+    VOICE_COMMAND("voice_command"),
+    /** the call of 5g-21..26 with its sound on the earpiece (for comparison) */
+    CALL_ON_PHONE("call_phone"),
+    /** nothing is done with the radio */
+    OFF("off");
+
+    /** the car's channel comes up: the phone records with its built-in microphone (CAMCORDER stays on it in every mode) */
+    val builtInMic get() = this == CALL_VIA_CAR || this == VOICE_COMMAND
+
+    companion object {
+        /** stage 5g-28: a new key: the owner chose the call on the phone after the trial of 4452 (the old choice is not kept) */
+        const val PREF = "aikb_car_mute_mode2"
+        /** stage 5g-28: what can be chosen; the voice command (no pause, the radio took YouTube into the voice channel) only in the code */
+        val choices = listOf(CALL_ON_PHONE, CALL_VIA_CAR, OFF)
+        fun read(prefs: SharedPreferences): CarMuteMode {
+            prefs.getString(PREF, null)?.let { k -> entries.firstOrNull { it.key == k } }?.let { return it }
+            // the switch of 5g-21: off stays off
+            return if (prefs.getBoolean(CarMuteCall.PREF, true)) CALL_ON_PHONE else OFF
+        }
+        fun write(prefs: SharedPreferences, mode: CarMuteMode) { prefs.edit().putString(PREF, mode.key).apply() }
+        fun next(mode: CarMuteMode) = choices[(choices.indexOf(mode) + 1) % choices.size]
+    }
+}
+
 object CarMuteCall {
     const val PREF = "aikb_car_mute_call"
-    /** on by default: used only with a car-like device (sco, no media) */
-    fun enabled(prefs: SharedPreferences) = prefs.getBoolean(PREF, true)
+    /** stage 5g-27: on unless the mode is "no muting" (the old switch off is that mode) */
+    fun enabled(prefs: SharedPreferences) = CarMuteMode.read(prefs) != CarMuteMode.OFF
     /** the probe at this tap: a car-like device, its link not warm (a warm link mutes the radio already), switch on */
     fun shouldStart(carLike: Boolean, warm: Boolean, on: Boolean) = carLike && !warm && on // Android 8+: checked when placed
 
@@ -41,7 +74,23 @@ object CarMuteCall {
     private const val NUMBER = "dictation@aikb"
 
     /** one call of one dictation (stage 5g-26: of the whole continuous session); times in ms from [start] */
-    class Session(val startedAt: Long) {
+    class Session(val startedAt: Long, val mode: CarMuteMode = CarMuteMode.CALL_ON_PHONE) {
+        /** stage 5g-27: the voice command is stopped with this (null: not a voice command, or not started) */
+        @Volatile var stopVoice: (() -> Unit)? = null
+        /** stage 5g-27: the audio mode went back to normal while the dictation still ran (the radio may play again), ms */
+        @Volatile var brokeAt = -1L
+        /** stage 5g-28: when the call was asked for (placeCall), reached our service, and was dialing (wall clock; -1: not) */
+        @Volatile var placedAt = -1L
+        @Volatile var serviceAt = -1L
+        @Volatile var dialingAt = -1L
+        /** stage 5g-28: why the call became active (5g-29: always "at once") */
+        @Volatile var activeBy: String? = null
+        /** stage 5g-29: how often the system refused to move the call off Bluetooth */
+        @Volatile var routeFailures = 0
+        /** stage 5g-28: when the phone went into the call mode (MODE_IN_COMMUNICATION/IN_CALL), wall clock; -1: not yet */
+        @Volatile var inCallAt = -1L
+        /** stage 5g-28: the fast path at the touch (the call device set to the earpiece and the call mode by us), for the journal */
+        @Volatile var fastPath: String? = null
         /** stage 5g-26: placed at the touch of the microphone (before the tap) */
         var fromTouch = false
         /** stage 5g-26: what ended it ("phrase end", "cancel", "hidden", "watchdog" …) */
@@ -55,45 +104,132 @@ object CarMuteCall {
         @Synchronized fun log(e: String) { if (events.size < 40) events.add("${System.currentTimeMillis() - startedAt} ms $e") }
         /** "car mute: call state sent at N ms, sco: no, phone level during first 2 s X dBFS, call ended at N ms" */
         fun summary(phoneDbfs: Double?): String =
-            "call state sent at " + (if (activeAt >= 0) "${activeAt - startedAt} ms" else "never") +
+            (if (inCallAt >= 0) "touch to call mode ${inCallAt - startedAt} ms (${if (inCallAt - startedAt <= FAST_MS) "fast" else "slow"}), " else "call mode never seen, ") +
+            (fastPath?.let { "fast path: $it, " } ?: "") +
+            // stage 5g-29: the pause of the radio follows "active": fast within 200 ms of the touch
+            (if (activeAt >= 0) "touch to active ${activeAt - startedAt} ms (${if (activeAt - startedAt <= ACTIVE_FAST_MS) "fast" else "slow"}), " else "") +
+            "route refusals $routeFailures, " +
+            "call state sent at " + (if (activeAt >= 0) "${activeAt - startedAt} ms" else "never") + steps() +
                 ", sco: " + (when (sco) { true -> "yes"; false -> "no"; null -> "?" }) +
                 ", phone level during first 2 s " + (phoneDbfs?.let { "${it.toInt()} dBFS" } ?: "?") +
                 ", call ended at " + (if (endedAt >= 0) "${endedAt - startedAt} ms" else "?") +
+                ", mode ${mode.key}, pause " + (if (brokeAt >= 0) "may have broken at $brokeAt ms (audio mode normal)" else "held to the end") +
                 (endedBy?.let { " by $it" } ?: "") + (if (fromTouch) ", placed at the touch" else "") +
                 // stage 5g-26: what goes to OpenAI: the quiet call mode is raised before sending (Loudness.gainFor)
                 (phoneDbfs?.let { db -> helium314.keyboard.latin.voiceapi.Loudness.gainFor(db).let { g ->
                     if (g > 1.0) ", sent raised by ${Math.round(20 * kotlin.math.log10(g))} dB to about ${Math.round(db + 20 * kotlin.math.log10(g))} dBFS" else "" } } ?: "")
         fun system(): String = synchronized(this) { events.joinToString("; ") }
+        /** stage 5g-28: " (placeCall N ms, service N ms, dialing N ms, active by …)": where our part of the delay goes */
+        private fun steps(): String {
+            if (placedAt < 0) return ""
+            val parts = listOfNotNull("placeCall ${placedAt - startedAt} ms",
+                serviceAt.takeIf { it >= 0 }?.let { "service ${it - startedAt} ms" },
+                dialingAt.takeIf { it >= 0 }?.let { "dialing ${it - startedAt} ms" },
+                activeBy?.let { "active by $it" })
+            return " (" + parts.joinToString(", ") + ")"
+        }
     }
 
     @Volatile var session: Session? = null
         private set
 
+    /** stage 5g-28: the call mode this soon after the touch is "fast" (the owner: the pause ~0.5 s); slower is "slow" (~1.5 s) */
+    const val FAST_MS = 400L
+    /** stage 5g-29: "active" this soon after the touch is "fast" */
+    const val ACTIVE_FAST_MS = 200L
+
     fun handle(context: Context) = PhoneAccountHandle(ComponentName(context, AikbCallService::class.java), ACCOUNT_ID)
 
-    /** places the call; the result comes to the [Session] (on the main thread of Telecom's binding) */
+    /**
+     * places the call (stage 5g-27: or starts the voice command) in [mode]; the result comes to the [Session]. [carTail]:
+     * the end of the address of the car (the voice command goes to that device)
+     */
     @RequiresApi(26)
-    fun start(context: Context): Session {
-        val s = Session(System.currentTimeMillis())
+    fun start(context: Context, mode: CarMuteMode = CarMuteMode.CALL_ON_PHONE, carTail: String? = null): Session {
+        val s = Session(System.currentTimeMillis(), mode)
         session = s
         val app = context.applicationContext
-        val tm = app.getSystemService(TelecomManager::class.java)
-        if (tm == null) { s.log("no telecom"); return s }
+        if (mode == CarMuteMode.VOICE_COMMAND) { startVoiceCommand(app, s, carTail); return s }
+        placeCall(app, s)
+        return s
+    }
+
+    @Volatile private var registered = false
+
+    /**
+     * stage 5g-28: the phone account of the keyboard is registered ahead (when the keyboard shows a field with a car
+     * there), not at the tap: one step less between the touch and the call
+     */
+    @RequiresApi(26)
+    fun prepare(context: Context) {
+        if (registered) return
+        val app = context.applicationContext
         try {
-            val h = handle(app)
-            tm.registerPhoneAccount(PhoneAccount.builder(h, "AI Keyboard")
+            app.getSystemService(TelecomManager::class.java)?.registerPhoneAccount(PhoneAccount.builder(handle(app), "AI Keyboard")
                 .setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED)
                 .addSupportedUriScheme(PhoneAccount.SCHEME_SIP)
-                .build())
-            if (!tm.isOutgoingCallPermitted(h)) { s.log("outgoing call not permitted"); return s }
+                .build()) ?: return
+            registered = true
+        } catch (_: Exception) { }
+    }
+
+    @RequiresApi(26)
+    private fun placeCall(app: Context, s: Session) {
+        val tm = app.getSystemService(TelecomManager::class.java)
+        if (tm == null) { s.log("no telecom"); return }
+        try {
+            val h = handle(app)
+            prepare(app)
+            if (!tm.isOutgoingCallPermitted(h)) { s.log("outgoing call not permitted"); return }
             val extras = Bundle().apply {
                 putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, h)
-                putBoolean(TelecomManager.EXTRA_START_CALL_WITH_SPEAKERPHONE, true)
+                // the call on the phone starts on the speaker; the call via the car as the system wants it (Bluetooth)
+                if (s.mode == CarMuteMode.CALL_ON_PHONE) putBoolean(TelecomManager.EXTRA_START_CALL_WITH_SPEAKERPHONE, true)
             }
+            s.placedAt = System.currentTimeMillis()
             tm.placeCall(Uri.fromParts(PhoneAccount.SCHEME_SIP, NUMBER, null), extras)
             s.log("placeCall")
         } catch (e: SecurityException) { s.log("SecurityException") } catch (e: Exception) { s.log("error ${e.javaClass.simpleName}") }
-        return s
+    }
+
+    /**
+     * stage 5g-27: the voice command of the hands-free profile (BluetoothHeadset.startVoiceRecognition, the AT command BVRA):
+     * needs "Nearby devices" (asked once, 5g-25); without it the call via the car is used, and the journal says so
+     */
+    @android.annotation.SuppressLint("MissingPermission")
+    @RequiresApi(26)
+    private fun startVoiceCommand(app: Context, s: Session, carTail: String?) {
+        if (Build.VERSION.SDK_INT >= 31 && app.checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            s.log("voice command: no Bluetooth permission, call via the car instead")
+            placeCall(app, s); return
+        }
+        val adapter = app.getSystemService(android.bluetooth.BluetoothManager::class.java)?.adapter
+        if (adapter == null) { s.log("voice command: no Bluetooth adapter"); return }
+        try {
+            val asked = adapter.getProfileProxy(app, object : android.bluetooth.BluetoothProfile.ServiceListener {
+                override fun onServiceConnected(profile: Int, proxy: android.bluetooth.BluetoothProfile) {
+                    val hs = proxy as android.bluetooth.BluetoothHeadset
+                    fun close() { try { adapter.closeProfileProxy(android.bluetooth.BluetoothProfile.HEADSET, hs) } catch (_: Exception) { } }
+                    try {
+                        val devices = hs.connectedDevices
+                        val dev = devices.firstOrNull { d -> carTail != null && d.address?.endsWith(carTail, ignoreCase = true) == true }
+                            ?: devices.firstOrNull()
+                        if (dev == null) { s.log("voice command: no hands-free device"); close(); return }
+                        if (s.endRequested) { s.log("voice command: ended before it started"); close(); return }
+                        val ok = hs.startVoiceRecognition(dev)
+                        s.log("voice command started: $ok")
+                        if (ok) s.activeAt = System.currentTimeMillis()
+                        s.stopVoice = {
+                            try { s.log("voice command stopped: " + hs.stopVoiceRecognition(dev)) } catch (e: Exception) { s.log("voice command stop: ${e.javaClass.simpleName}") }
+                            close()
+                        }
+                        if (s.endRequested) { s.stopVoice?.invoke(); s.stopVoice = null }
+                    } catch (e: Exception) { s.log("voice command: ${e.javaClass.simpleName}"); close() }
+                }
+                override fun onServiceDisconnected(profile: Int) { s.log("voice command: headset service gone") }
+            }, android.bluetooth.BluetoothProfile.HEADSET)
+            s.log("voice command asked: $asked")
+        } catch (e: Exception) { s.log("voice command: ${e.javaClass.simpleName}") }
     }
 
     /**
@@ -105,6 +241,7 @@ object CarMuteCall {
         if (!s.endRequested) { s.endedBy = by; s.log("call ended by $by") }
         s.endRequested = true
         if (s.endedAt < 0) s.endedAt = System.currentTimeMillis()
+        s.stopVoice?.let { it(); s.stopVoice = null } // stage 5g-27: the voice command
         val c = s.connection ?: return
         try { c.setDisconnected(DisconnectCause(DisconnectCause.LOCAL)); c.destroy() } catch (_: Exception) { }
         s.connection = null
@@ -123,10 +260,15 @@ class AikbCallService : ConnectionService() {
         c.connectionProperties = Connection.PROPERTY_SELF_MANAGED
         c.audioModeIsVoip = true
         c.setCallerDisplayName("AI Keyboard", TelecomManager.PRESENTATION_ALLOWED)
-        c.setAddress(request?.address, TelecomManager.PRESENTATION_ALLOWED)
+        // stage 5g-29 (4453: the radio showed "a call WITH A NUMBER"): no address, only the name, as an icon of a call
+        c.setAddress(null, TelecomManager.PRESENTATION_RESTRICTED)
         c.setInitializing()
+        s?.serviceAt = System.currentTimeMillis()
+        // stage 5g-29 (4453: the "dialing" of 5g-28 made the pause ALWAYS slow, with a click of the radio: the radio got
+        // ready for an outgoing call but held its music until "active", and "active" waited for the route): active at once,
+        // as in 4452; the route to the phone is asked for alongside, it never holds "active" back
         c.setActive()
-        s?.let { it.activeAt = System.currentTimeMillis(); it.connection = c; it.log("active") }
+        s?.let { it.activeAt = System.currentTimeMillis(); it.activeBy = "at once"; it.connection = c; it.log("active") }
         if (s == null || s.endRequested) {
             s?.log("ended before it was up")
             c.setDisconnected(DisconnectCause(DisconnectCause.LOCAL)); c.destroy()
@@ -140,10 +282,13 @@ class AikbCallService : ConnectionService() {
     }
 
     private class MuteConnection(val s: CarMuteCall.Session?) : Connection() {
+        private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+
         @Deprecated("CallAudioState is deprecated on Android 14, still delivered")
         override fun onCallAudioStateChanged(state: CallAudioState?) {
             val route = state?.route ?: return
             s?.log("route ${CallAudioState.audioRouteToString(route)}")
+            if (s?.mode != CarMuteMode.CALL_ON_PHONE) return
             // never through Bluetooth: that would bring up SCO and make the phone deaf
             if (route == CallAudioState.ROUTE_BLUETOOTH && Build.VERSION.SDK_INT < 34) {
                 @Suppress("DEPRECATION")
@@ -162,38 +307,60 @@ class AikbCallService : ConnectionService() {
             endpoints = available.toList()
             // stage 5g-26 (4436: EARPIECE -> BLUETOOTH -> EARPIECE in 300-800 ms, the phone deaf for ~400 ms each time):
             // the phone's route is asked for as soon as the routes are known, before Telecom picks Bluetooth itself
+            // stage 5g-27: only the call on the phone; the call via the car stays on Bluetooth
+            if (s?.mode != CarMuteMode.CALL_ON_PHONE) return
             if (!pinned && endpoints.any { it.endpointType == android.telecom.CallEndpoint.TYPE_BLUETOOTH }) { pinned = true; moveOffBluetooth(0) }
         }
 
         @RequiresApi(34)
         override fun onCallEndpointChanged(endpoint: android.telecom.CallEndpoint) {
             s?.log("endpoint type ${endpoint.endpointType}")
+            if (s?.mode != CarMuteMode.CALL_ON_PHONE) return
             if (endpoint.endpointType == android.telecom.CallEndpoint.TYPE_BLUETOOTH) moveOffBluetooth(0)
         }
 
-        private val handler = android.os.Handler(android.os.Looper.getMainLooper())
-
         /**
          * stage 5g-22 (4401: "move off bluetooth failed 3", ERROR_ANOTHER_REQUEST: Telecom was still busy with its own
-         * route): asked again after 300 ms, at most 3 times
+         * route): asked again. Stage 5g-29 (4453: the more refusals, the later everything): less fighting over the route:
+         * at most [MOVE_TRIES] requests one after another, then nothing until [MOVE_PAUSE_MS] after the call became active,
+         * then one more request
          */
+        private var calmUntil = 0L
+        private var lateTry = false
+
         @RequiresApi(34)
         private fun moveOffBluetooth(tries: Int) {
-            if (tries >= 3) return
+            val now = System.currentTimeMillis()
+            if (now < calmUntil) return
+            if (tries >= MOVE_TRIES) {
+                s?.log("route: $MOVE_TRIES refusals, quiet until ${MOVE_PAUSE_MS} ms after active")
+                val since = s?.activeAt?.takeIf { it > 0 } ?: now
+                calmUntil = since + MOVE_PAUSE_MS
+                if (!lateTry) { lateTry = true; handler.postDelayed({ if (state != STATE_DISCONNECTED) moveOffBluetooth(0) }, (calmUntil - now).coerceAtLeast(0)) }
+                return
+            }
             val to = endpoints.firstOrNull { it.endpointType == android.telecom.CallEndpoint.TYPE_EARPIECE }
                 ?: endpoints.firstOrNull { it.endpointType == android.telecom.CallEndpoint.TYPE_SPEAKER } ?: return
             requestCallEndpointChange(to, { it.run() }, object : android.os.OutcomeReceiver<Void, android.telecom.CallEndpointException> {
                 override fun onResult(result: Void?) { s?.log("moved off bluetooth to type ${to.endpointType}") }
                 override fun onError(error: android.telecom.CallEndpointException) {
                     s?.log("move off bluetooth failed ${error.code}")
+                    s?.let { it.routeFailures++ }
                     if (error.code == android.telecom.CallEndpointException.ERROR_ANOTHER_REQUEST && state != STATE_DISCONNECTED)
-                        handler.postDelayed({ moveOffBluetooth(tries + 1) }, 300)
+                        handler.postDelayed({ moveOffBluetooth(tries + 1) }, MOVE_RETRY_MS)
                 }
             })
         }
 
-        override fun onDisconnect() { s?.log("onDisconnect"); setDisconnected(DisconnectCause(DisconnectCause.LOCAL)); destroy() }
+        override fun onDisconnect() { handler.removeCallbacksAndMessages(null); s?.log("onDisconnect"); setDisconnected(DisconnectCause(DisconnectCause.LOCAL)); destroy() }
         override fun onAbort() { s?.log("onAbort"); setDisconnected(DisconnectCause(DisconnectCause.CANCELED)); destroy() }
         override fun onStateChanged(state: Int) { s?.log("state ${Connection.stateToString(state)}") }
+    }
+
+    companion object {
+        /** stage 5g-29: the route to the phone: at most 3 requests 150 ms apart, then one more 500 ms after "active" */
+        const val MOVE_RETRY_MS = 150L
+        const val MOVE_TRIES = 3
+        const val MOVE_PAUSE_MS = 500L
     }
 }

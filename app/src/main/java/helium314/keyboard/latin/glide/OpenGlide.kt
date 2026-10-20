@@ -39,6 +39,14 @@ object OpenGlide {
     private val states = WeakHashMap<Dictionary, State>()
     private fun stateOf(dict: Dictionary) = synchronized(states) { states.getOrPut(dict) { State(dict.mLocale?.toString() ?: "?") } }
 
+    /** swipe-5: how often a later update of the strip was kept from replacing the result of a glide (both engines) */
+    object StripLog {
+        @Volatile var keptCount = 0; private set
+        @Volatile var lastKeptAt = 0L; private set
+        @JvmStatic fun kept() { keptCount++; lastKeptAt = System.currentTimeMillis() }
+        fun summary() = "результат свайпа сохранён от пересчёта полосы: $keptCount раз"
+    }
+
     /** swipe-3: how long the search of words took for the last glides (and updates during a glide), in ms */
     /**
      * swipe-3 (owner's rule 2026-10-19): the faster matcher, the timing and the merged updates are for the play build
@@ -57,7 +65,7 @@ object OpenGlide {
     }
 
     /** swipe-2: for "Проверка словарей": every dictionary of this process with its index (words, time) or why not */
-    fun status(): String = statusOfIndexes() + (if (play) "; " + Timing.summary() else "")
+    fun status(): String = statusOfIndexes() + (if (play) "; " + Timing.summary() else "") + "; " + StripLog.summary()
 
     private fun statusOfIndexes(): String = synchronized(states) {
         if (!active()) return "закрытая библиотека Google (открытый движок не используется)"

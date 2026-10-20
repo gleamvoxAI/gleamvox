@@ -143,6 +143,11 @@ object SubtypeSettings {
 
     fun getSystemLocales(): List<Locale> = systemLocales.toList()
 
+    /** tests only (ux-11): pretend the system languages are [locales]; the defaults are made anew */
+    internal fun setSystemLocalesForTest(locales: List<Locale>) {
+        systemLocales.clear(); systemLocales.addAll(locales); systemSubtypes.clear()
+    }
+
     fun getResourceSubtypesForLocale(locale: Locale): List<InputMethodSubtype> = resourceSubtypesByLocale[locale].orEmpty()
 
     fun getAvailableSubtypeLocales(): List<Locale> = resourceSubtypesByLocale.keys.toList()
@@ -228,8 +233,13 @@ object SubtypeSettings {
             // hardcoded fallback to en-US for weird cases
             systemSubtypes.add(resourceSubtypesByLocale[Locale.US]!!.first())
         } else {
-            systemSubtypes.addAll(subtypes)
+            systemSubtypes.addAll(subtypes.distinctBy { it.locale() }) // ux-11: one subtype per language
         }
+        // ux-11 (a clean install of Gleamvox with a Russian phone had only Russian and no key to change the language): without
+        // settings of the person the system languages AND English (US) are on, unless English is among them already
+        // (any English); then, with 2+ languages, the language key is there at once
+        if (systemSubtypes.none { it.locale().language == "en" })
+            resourceSubtypesByLocale[Locale.US]?.firstOrNull()?.let { systemSubtypes.add(it) }
         return systemSubtypes
     }
 
