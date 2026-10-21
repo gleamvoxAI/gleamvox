@@ -785,7 +785,7 @@ class VoiceInput @JvmOverloads constructor(
 
     /** stage 5g-27: the line of the mode on the panel: only in the developer mode and with a car there */
     private fun carModeLabel(): String? {
-        if (!carDictation || !helium314.keyboard.latin.ai.DeveloperMode.on(ime.prefs())) return null
+        if (!carDictation) return null // ux-11: for everybody with a car there, not only in the developer mode
         val ctx = VoiceInputView.labelContextFor(ime, currentLocale())
         // stage 5g-28 (the owner: the line did not fit and ran over): "🚗 Через телефон" and so on, one line
         return ctx.getString(R.string.car_mode_line, ctx.getString(carModeShort(CarMuteMode.read(ime.prefs()))))
@@ -1316,6 +1316,9 @@ class VoiceInput @JvmOverloads constructor(
         val s = CarMuteCall.start(ime, mode, carTail)
         s.fromTouch = fromTouch
         s.fastPath = fast
+        // stage 5g-30: what the phone tells the car (Bluetooth audio channel, mode, call device), into the journal
+        btEvents?.stop()
+        btEvents = BtEvents(ime) { line -> s.log("bt: $line") }.also { it.start() }
         watchCallMode(s)
         muteSession = s
         panel?.setCarPaused(true)
@@ -1357,6 +1360,9 @@ class VoiceInput @JvmOverloads constructor(
             override fun run() {
                 if (s.endRequested || muteSession !== s) {
                     if (android.os.Build.VERSION.SDK_INT >= 31) listener?.let { try { am0?.removeOnModeChangedListener(it) } catch (_: Exception) { } }
+                    // stage 5g-30: the Bluetooth events 1 s more (the channel going down after the call)
+                    val ev = btEvents; btEvents = null
+                    handler.postDelayed({ ev?.stop() }, 1000)
                     return
                 }
                 val am = ime.getSystemService(android.media.AudioManager::class.java)
@@ -1410,6 +1416,9 @@ class VoiceInput @JvmOverloads constructor(
     }
 
     // ---- stage 5g-28: the fast path and the call held after a phrase ----
+
+    /** stage 5g-30: the Bluetooth events of the call that runs */
+    private var btEvents: BtEvents? = null
 
     /** the call device and the call mode were set by us (given back when the call ends) */
     private var fastPathSet = false

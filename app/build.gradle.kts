@@ -195,7 +195,16 @@ android {
             "main_en_us__experimental.dict" to "main_en-US.dict",
             "emoji_ru.dict" to "emoji_ru.dict",
             "emoji_en.dict" to "emoji_en.dict",
-        )
+        ) + run {
+            // lang-1: 13 more languages (word lists CC BY 4.0 / CC BY-SA 4.0, docs/DICTIONARIES.md); the name inside the APK
+            // is the locale of the layout (Hebrew "iw" and Indonesian "in", the old codes Android uses)
+            val more = listOf("uk" to "uk__experimental", "kk" to "kk__experimental", "ar" to "ar__experimental",
+                "in" to "id__experimental", "cs" to "cs__experimental", "sk" to "sk__experimental", "hr" to "hr__experimental",
+                "fi" to "fi__experimental", "da" to "da__experimental", "nb" to "nb__experimental",
+                "iw" to "he__experimental", "fa" to "fa_ir__experimental", "az" to "az")
+            more.associate { (locale, source) -> "main_$source.dict" to "main_$locale.dict" } +
+                more.associate { (locale, source) -> "emoji_${source.substringBefore("_")}.dict" to "emoji_$locale.dict" }
+        }
         val prepareDicts = tasks.register("prepareAikbDictionaries") {
             inputs.file(checksumFile)
             inputs.property("dictsDir", dictsDir.path)

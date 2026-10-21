@@ -33,7 +33,7 @@ class CarMuteModeTest {
         assertTrue(CarMuteMode.CALL_VIA_CAR.builtInMic && CarMuteMode.VOICE_COMMAND.builtInMic, "the car's channel comes up: the built-in microphone records")
         assertFalse(CarMuteMode.CALL_ON_PHONE.builtInMic || CarMuteMode.OFF.builtInMic)
         val broken = helium314.keyboard.latin.voice.CarMuteCall.Session(0, CarMuteMode.CALL_VIA_CAR).apply { brokeAt = 1995 }
-        assertTrue("mode call_car, pause may have broken at 1995 ms (audio mode normal)" in broken.summary(null), broken.summary(null))
+        assertTrue("mode call_car, signal dialing_then_active, pause may have broken at 1995 ms (audio mode normal)" in broken.summary(null), broken.summary(null))
         // 5g-28: the journal says how fast the call mode came after the touch and where our part of the delay went
         val fast = helium314.keyboard.latin.voice.CarMuteCall.Session(1_000, CarMuteMode.CALL_ON_PHONE).apply {
             inCallAt = 1_120; fastPath = "earpiece set, call mode set"; placedAt = 1_030; serviceAt = 1_090; dialingAt = 1_095; activeAt = 1_180; activeBy = "moved off bluetooth"

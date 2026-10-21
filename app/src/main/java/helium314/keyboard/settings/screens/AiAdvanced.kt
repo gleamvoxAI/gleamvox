@@ -174,20 +174,37 @@ fun AiAdvancedContent(onSwitchedOff: () -> Unit = {}) {
             }
             HorizontalDivider()
         }
-        // stage 5g-21: the probe "mute the radio with a call"; stage 5g-27: four modes (the call via the car by default)
+        // ux-11: the mode of the car is now for everybody, in the voice part of the AI screen (CarModeBlock)
+        // stage 5g-30: what our call tells the car, and the reference of an ordinary call
         if (helium314.keyboard.latin.voiceapi.VoiceApiPrefs.isAvailable()) {
-            var mode by remember { mutableStateOf(helium314.keyboard.latin.voice.CarMuteMode.read(prefs)) }
+            var signal by remember { mutableStateOf(helium314.keyboard.latin.voice.CallSignal.read(prefs)) }
             Column {
-                Text(stringResource(R.string.car_mute_call_title), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.car_mode_summary), style = MaterialTheme.typography.bodySmall)
-                for (m in helium314.keyboard.latin.voice.CarMuteMode.choices) {
-                    Row(Modifier.fillMaxWidth().clickable { mode = m; helium314.keyboard.latin.voice.CarMuteMode.write(prefs, m) },
+                Text(stringResource(R.string.car_signal_title), style = MaterialTheme.typography.titleMedium)
+                for (sg in helium314.keyboard.latin.voice.CallSignal.entries) {
+                    Row(Modifier.fillMaxWidth().clickable { signal = sg; prefs.edit().putString(helium314.keyboard.latin.voice.CallSignal.PREF, sg.key).apply() },
                         verticalAlignment = Alignment.CenterVertically) {
-                        androidx.compose.material3.RadioButton(selected = mode == m, onClick = { mode = m; helium314.keyboard.latin.voice.CarMuteMode.write(prefs, m) },
-                            modifier = Modifier.testTag("car_mode_${m.key}"))
-                        Text(stringResource(helium314.keyboard.latin.voice.VoiceInput.carModeName(m)))
+                        androidx.compose.material3.RadioButton(selected = signal == sg, onClick = { signal = sg; prefs.edit().putString(helium314.keyboard.latin.voice.CallSignal.PREF, sg.key).apply() })
+                        Text(stringResource(if (sg == helium314.keyboard.latin.voice.CallSignal.LIKE_ORDINARY) R.string.car_signal_ordinary else R.string.car_signal_active))
                     }
                 }
+                val ctx = androidx.compose.ui.platform.LocalContext.current
+                var reference by remember { mutableStateOf(prefs.getString(helium314.keyboard.latin.voice.BtEvents.PREF_REFERENCE, "") ?: "") }
+                var running by remember { mutableStateOf(helium314.keyboard.latin.voice.BtEvents.referenceRunning()) }
+                Text(stringResource(R.string.car_reference_summary), style = MaterialTheme.typography.bodySmall)
+                Row {
+                    androidx.compose.material3.TextButton(enabled = !running, onClick = {
+                        helium314.keyboard.latin.voice.BtEvents.startReference(ctx); running = true
+                    }) { Text(stringResource(if (running) R.string.car_reference_running else R.string.car_reference_start)) }
+                    androidx.compose.material3.TextButton(onClick = {
+                        reference = prefs.getString(helium314.keyboard.latin.voice.BtEvents.PREF_REFERENCE, "") ?: ""
+                        running = helium314.keyboard.latin.voice.BtEvents.referenceRunning()
+                        if (reference.isNotEmpty()) {
+                            ctx.getSystemService(android.content.ClipboardManager::class.java)
+                                ?.setPrimaryClip(android.content.ClipData.newPlainText("reference", reference))
+                        }
+                    }) { Text(stringResource(R.string.car_reference_copy)) }
+                }
+                if (reference.isNotEmpty()) Text(reference.lines().take(40).joinToString("\n"), style = MaterialTheme.typography.bodySmall)
             }
             HorizontalDivider()
         }
@@ -330,4 +347,25 @@ fun modelDetails(models: TextModels, locale: Locale): String {
         lines.add("· $id, $price" + if (id in gone) ", not available (404)" else "")
     }
     return lines.joinToString("\n")
+}
+
+/** ux-11 (the owner could not find it): "In the car": how the music of the car radio is paused, for everybody */
+@Composable
+fun CarModeBlock() {
+    val prefs = LocalContext.current.prefs()
+    if (!helium314.keyboard.latin.voiceapi.VoiceApiPrefs.isAvailable()) return
+    var mode by remember { mutableStateOf(helium314.keyboard.latin.voice.CarMuteMode.read(prefs)) }
+    Column {
+        Text(stringResource(R.string.car_mode_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.car_mode_summary), style = MaterialTheme.typography.bodySmall)
+        for (m in helium314.keyboard.latin.voice.CarMuteMode.choices) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { mode = m; helium314.keyboard.latin.voice.CarMuteMode.write(prefs, m) },
+                verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.RadioButton(selected = mode == m, onClick = { mode = m; helium314.keyboard.latin.voice.CarMuteMode.write(prefs, m) },
+                    modifier = Modifier.testTag("car_mode_${m.key}"))
+                Text(stringResource(helium314.keyboard.latin.voice.VoiceInput.carModeName(m)))
+            }
+        }
+    }
+    HorizontalDivider()
 }

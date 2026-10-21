@@ -90,6 +90,7 @@ fun AiScreen(onClickBack: () -> Unit) {
                     HorizontalDivider()
                     // stage 5g-16: the switch is also here, where it is easy to find
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU && helium314.keyboard.latin.FreshScreenshot.inBuild()) ScreenshotSwitch()
+                    CarModeBlock() // ux-11: "In the car" for everybody
                     AiQualityBlock()
                     ReportProblemRow()
                     AiAdvancedSection()

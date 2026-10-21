@@ -992,7 +992,7 @@
     <string name="dictionary_check_title">Проверка словарей</string>
     <string name="dictionary_check_text">Нажмите: покажет и скопирует, загружаются ли словари русского и английского</string>
     <string name="about_dictionaries_title">Словари</string>
-    <string name="about_dictionaries_text">Списки слов русского и английского словарей: Leipzig Corpora Collection (Wortschatz, Universität Leipzig), CC BY 4.0, собраны проектом словарей HeliBoard (codeberg.org/Helium314/aosp-dictionaries). Слова для поиска эмодзи: Unicode CLDR (Unicode License v3) и поисковый индекс эмодзи Signal (AGPL-3.0). Остальные языки: словари AOSP и HeliBoard.</string>
+    <string name="about_dictionaries_text">Списки слов словарей русского, английского, украинского, казахского, арабского, индонезийского, чешского, хорватского, финского, датского, норвежского, иврита и персидского: Leipzig Corpora Collection (Wortschatz, Universität Leipzig), CC BY 4.0; для иврита также FrequencyWords (Hermit Dave), CC BY-SA 4.0; словацкий: FrequencyWords (Hermit Dave); азербайджанский: aosp-dict-az (Subhan Gadirli), CC BY-SA 4.0, и Leipzig Corpora. Собраны проектом словарей HeliBoard (codeberg.org/Helium314/aosp-dictionaries). Слова для поиска эмодзи: Unicode CLDR (Unicode License v3) и поисковый индекс эмодзи Signal (AGPL-3.0). Остальные языки: словари AOSP и HeliBoard.</string>
     <string name="about_silero_title">Детектор речи: Silero VAD</string>
     <string name="voice_waiting_network">Ждём сеть… звук сохранён</string>
     <string name="voice_network_retry">Нет связи · Повторить</string>
@@ -1065,4 +1065,13 @@
     <string name="car_mode_short_phone">Через телефон</string>
     <string name="car_mode_short_car">Через машину</string>
     <string name="car_mode_short_off">Без паузы</string>
+    <!-- stage 5g-30 -->
+    <string name="car_signal_title">Что звонок сообщает машине</string>
+    <string name="car_signal_ordinary">Как обычный звонок: набор, потом разговор (по умолчанию)</string>
+    <string name="car_signal_active">Сразу разговор (как в 4452–4457)</string>
+    <string name="car_reference_summary">Эталон: нажмите «Записать», затем в течение 60 с сделайте обычный звонок (например, на автоответчик) и завершите его. События сохранятся; «Копировать» положит их в буфер.</string>
+    <string name="car_reference_start">Записать 60 с</string>
+    <string name="car_reference_running">Идёт запись…</string>
+    <string name="car_reference_copy">Копировать</string>
+    <string name="car_mode_title">В машине: пауза музыки</string>
 </resources>

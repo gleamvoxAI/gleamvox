@@ -122,7 +122,7 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
 
         info.orientation = LinearLayout.VERTICAL
         info.gravity = Gravity.CENTER_HORIZONTAL
-        for (t in listOf(partialText, noticeText, signalText, retryPhraseText, carModeText)) {
+        for (t in listOf(partialText, noticeText, signalText, retryPhraseText)) {
             t.gravity = Gravity.CENTER
             t.setTextColor(palette.grey)
             t.includeFontPadding = false
@@ -138,11 +138,11 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
         retryPhraseText.setTextColor(palette.goldText)
         retryPhraseText.visibility = View.GONE
         retryPhraseText.setOnClickListener { actions.onRetryPhrase() }
-        carModeText.setTextColor(palette.goldText)
-        carModeText.maxLines = 1
-        carModeText.ellipsize = TextUtils.TruncateAt.END
+        // ux-11 (the owner: "I can't tap it"): the line lay in the box of the info lines and ran out of it, where no touch
+        // reaches; now a button of its own at the top of the panel, at least 48 dp high
+        setupButton(carModeText, palette.key, palette.goldText)
         carModeText.visibility = View.GONE
-        carModeText.minHeight = (40 * resources.displayMetrics.density).toInt()
+        carModeText.minHeight = (48 * resources.displayMetrics.density).toInt()
         carModeText.setOnClickListener { actions.onCarMode() }
         journalLink.gravity = Gravity.CENTER
         journalLink.setTextColor(palette.goldText)
@@ -168,6 +168,7 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
         retryButton.visibility = View.GONE
         addView(cancelButton)
         addView(retryButton)
+        addView(carModeText)
         art.setOnClickListener {
             when (lastState) {
                 VoiceState.LISTENING -> actions.onDone() // finish and send
@@ -225,6 +226,13 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
             (b.background as GradientDrawable).cornerRadius = s.size(36f)
         }
         place(art, 0f, 0f, w, h)
+        // ux-11: the car mode button at the top (above the status; the rings of the circle never reach it)
+        carModeText.setTextSize(TypedValue.COMPLEX_UNIT_PX, s.size(36f))
+        (carModeText.background as GradientDrawable).cornerRadius = s.size(36f)
+        val carH = maxOf(s.size(110f), carModeText.minHeight.toFloat())
+        // design y counts from the top of the strip (120 above the panel): the panel starts at 0 here
+        val carTop = 0f
+        place(carModeText, s.x(200f), carTop, w - s.x(200f), carTop + carH)
         // status around y 300 of the design, the info lines between it and the circle
         place(status, s.x(40f), s.y(250f), w - s.x(40f), s.y(345f))
         place(info, s.x(40f), s.y(345f), w - s.x(40f), s.y(430f))
@@ -455,6 +463,8 @@ class VoiceInputView(context: Context, colors: Colors, private val actions: Acti
     }
     /** for tests */
     fun carModeLine(): String? = carModeText.takeIf { it.visibility == View.VISIBLE }?.text?.toString()
+    /** for tests (ux-11): the car mode button: its place in the panel, and a tap on it */
+    fun carModeButton(): View = carModeText
 
     /**
      * stage 5g-26: the "quiet call" holds the car's music paused: a small car badge at the lower left of the circle

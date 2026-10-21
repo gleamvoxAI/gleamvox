@@ -22,6 +22,11 @@ import org.robolectric.shadows.ShadowLog
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
+import helium314.keyboard.latin.common.LocaleUtils
+import helium314.keyboard.latin.utils.DictionaryInfoUtils
+import org.junit.Assume
+import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [
@@ -84,10 +89,35 @@ class SubtypeTest {
         assertEquals(listOf("ru", "en-GB"), defaults("ru", "en-GB"), "any English counts as English")
         assertEquals(listOf("de", "en-US"), defaults("de"), "a German phone: German and English")
         assertEquals(listOf("ru", "en-US"), defaults("ru", "ru"), "no duplicate languages")
+        // lang-1: ALL languages of the phone, not only the first one
+        assertEquals(listOf("ru", "uk", "kk", "de", "en-US"), defaults("ru", "uk", "kk", "de"), "every language of the phone")
+        assertEquals(listOf("fr", "ar", "en-GB", "fi"), defaults("fr", "ar", "en-GB", "fi"), "English among them: not added twice")
         // the language key: on by default; settings of the person are kept
         assertTrue(helium314.keyboard.latin.settings.Defaults.PREF_SHOW_LANGUAGE_SWITCH_KEY)
         // existing settings (the person chose only Spanish): nothing is added
         SubtypeSettings.addEnabledSubtype(latinIME.prefs(), SubtypeSettings.getResourceSubtypesForLocale("es".constructLocale()).first())
         assertEquals(listOf("es"), SubtypeSettings.getEnabledSubtypes(true).map { it.locale().language })
+    }
+
+    /** lang-1: every new language has its own layout and finds its main and emoji dictionaries in the APK (Hebrew is "iw",
+     *  Indonesian "in" in Android). The file names come from a personal or play build (build/aikb-personal-assets). */
+    @Test fun newLanguagesFindTheirDictionaries() {
+        val dir = File("build/aikb-personal-assets/dicts")
+        Assume.assumeTrue("the dictionaries are prepared by a personal or play build", dir.isDirectory)
+        val files = dir.list()!!.toList()
+        val layouts = mapOf("uk" to "ukrainian", "kk" to "russian", "ar" to "arabic", "in" to "qwerty", "cs" to "qwertz",
+            "sk" to "qwerty", "hr" to "qwertz", "fi" to "qwerty+", "da" to "qwerty+", "nb" to "qwerty+", "iw" to "hebrew",
+            "fa" to "farsi", "az_AZ" to "qwerty")
+        for ((tag, layout) in layouts) {
+            val subtype = SubtypeSettings.getResourceSubtypesForLocale(tag.constructLocale()).firstOrNull()
+            assertNotNull(subtype, "a layout for $tag")
+            assertEquals(layout, subtype.toSettingsSubtype().mainLayoutName() ?: "qwerty", "the layout of $tag")
+            for (type in listOf("main", "emoji")) {
+                val match = LocaleUtils.getBestMatch(subtype.locale(), files.filter { it.startsWith(type + "_") }) {
+                    DictionaryInfoUtils.extractLocaleFromAssetsDictionaryFile(it)
+                }
+                assertNotNull(match, "the $type dictionary of $tag in $files")
+            }
+        }
     }
 }

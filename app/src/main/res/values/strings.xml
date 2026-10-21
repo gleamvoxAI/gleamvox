@@ -1756,7 +1756,7 @@ New dictionary:
     <string name="dictionary_check_title">Dictionary check</string>
     <string name="dictionary_check_text">Tap: shows and copies whether the word lists for Russian and English load</string>
     <string name="about_dictionaries_title">Dictionaries</string>
-    <string name="about_dictionaries_text">Word lists of the Russian and English dictionaries: Leipzig Corpora Collection (Wortschatz, Universität Leipzig), CC BY 4.0, built by the HeliBoard dictionaries project (codeberg.org/Helium314/aosp-dictionaries). Emoji search words: Unicode CLDR (Unicode License v3) and the Signal emoji search index (AGPL-3.0). Other languages: AOSP and HeliBoard dictionaries.</string>
+    <string name="about_dictionaries_text">Word lists of the Russian, English, Ukrainian, Kazakh, Arabic, Indonesian, Czech, Croatian, Finnish, Danish, Norwegian, Hebrew and Persian dictionaries: Leipzig Corpora Collection (Wortschatz, Universität Leipzig), CC BY 4.0; Hebrew also FrequencyWords (Hermit Dave), CC BY-SA 4.0; Slovak: FrequencyWords (Hermit Dave); Azerbaijani: aosp-dict-az (Subhan Gadirli), CC BY-SA 4.0, and Leipzig Corpora. Built by the HeliBoard dictionaries project (codeberg.org/Helium314/aosp-dictionaries). Emoji search words: Unicode CLDR (Unicode License v3) and the Signal emoji search index (AGPL-3.0). Other languages: AOSP and HeliBoard dictionaries.</string>
     <string name="about_silero_title">Speech detector: Silero VAD</string>
     <string name="voice_waiting_network">Waiting for the network… the sound is kept</string>
     <string name="voice_network_retry">No connection · Retry</string>
@@ -1831,4 +1831,13 @@ New dictionary:
     <string name="car_mode_short_phone">Via the phone</string>
     <string name="car_mode_short_car">Via the car</string>
     <string name="car_mode_short_off">No pause</string>
+    <!-- stage 5g-30 -->
+    <string name="car_signal_title">What the call tells the car</string>
+    <string name="car_signal_ordinary">Like an ordinary call: dialing, then talking (default)</string>
+    <string name="car_signal_active">Talking at once (as in 4452–4457)</string>
+    <string name="car_reference_summary">Reference: tap “Record”, then within 60 s make an ordinary call (for example to voicemail) and end it. The events are saved; “Copy” puts them in the clipboard.</string>
+    <string name="car_reference_start">Record 60 s</string>
+    <string name="car_reference_running">Recording…</string>
+    <string name="car_reference_copy">Copy</string>
+    <string name="car_mode_title">In the car: pause the music</string>
 </resources>

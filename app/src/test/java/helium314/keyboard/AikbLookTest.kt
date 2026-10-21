@@ -183,6 +183,26 @@ class AikbLookTest {
         assertFalse(p.micDescription().contains(latinIME.getString(R.string.voice_car_music_paused)))
     }
 
+    /** ux-11 (the owner: "I can't tap it"): the car mode button lies inside the panel, at least 48 dp high, a tap switches */
+    @Test fun carModeButtonCanBeTapped() {
+        var panel: VoiceInputView? = null
+        var taps = 0
+        shoot(null, "voice_car_mode", "aikb_dark", voicePanel = { _, p ->
+            p.freezeTime(0f)
+            p.update(VoiceState.LISTENING, "", null)
+            p.setCarMode("🚗 Через телефон")
+            panel = p
+        })
+        val p = panel!!
+        val b = p.carModeButton()
+        val density = latinIME.resources.displayMetrics.density
+        assertTrue(b.visibility == View.VISIBLE && b.height >= (48 * density).toInt() - 1, "height ${b.height}")
+        assertTrue(b.left >= 0 && b.top >= 0 && b.right <= p.width && b.bottom <= p.height, "inside the panel: ${b.left},${b.top},${b.right},${b.bottom} of ${p.width}x${p.height}")
+        b.setOnClickListener { taps++ }
+        assertTrue(b.performClick())
+        assertEquals(1, taps)
+    }
+
     @Test fun aikbStyleIsTheDefault() {
         assertEquals(KeyboardTheme.STYLE_AIKB, Defaults.PREF_THEME_STYLE)
     }

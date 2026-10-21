@@ -16,6 +16,7 @@ import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import androidx.annotation.RequiresApi
+import helium314.keyboard.latin.utils.prefs
 
 /**
  * Stage 5g-21, owner's addition 2 (a probe, personal only): the car radio F0 mutes its own music for a call, so far only
@@ -63,6 +64,18 @@ enum class CarMuteMode(val key: String) {
     }
 }
 
+/**
+ * Stage 5g-30: what the call tells the car: like an ordinary call ("dialing" first, the car may pause at once; default) or
+ * "active" at once (as in 4452–4457). Developer mode, for comparison.
+ */
+enum class CallSignal(val key: String) {
+    LIKE_ORDINARY("dialing_then_active"), ACTIVE_AT_ONCE("active_at_once");
+    companion object {
+        const val PREF = "aikb_car_call_signal"
+        fun read(prefs: SharedPreferences) = prefs.getString(PREF, null)?.let { k -> entries.firstOrNull { it.key == k } } ?: LIKE_ORDINARY
+    }
+}
+
 object CarMuteCall {
     const val PREF = "aikb_car_mute_call"
     /** stage 5g-27: on unless the mode is "no muting" (the old switch off is that mode) */
@@ -74,7 +87,7 @@ object CarMuteCall {
     private const val NUMBER = "dictation@aikb"
 
     /** one call of one dictation (stage 5g-26: of the whole continuous session); times in ms from [start] */
-    class Session(val startedAt: Long, val mode: CarMuteMode = CarMuteMode.CALL_ON_PHONE) {
+    class Session(val startedAt: Long, val mode: CarMuteMode = CarMuteMode.CALL_ON_PHONE, val signal: CallSignal = CallSignal.LIKE_ORDINARY) {
         /** stage 5g-27: the voice command is stopped with this (null: not a voice command, or not started) */
         @Volatile var stopVoice: (() -> Unit)? = null
         /** stage 5g-27: the audio mode went back to normal while the dictation still ran (the radio may play again), ms */
@@ -113,7 +126,7 @@ object CarMuteCall {
                 ", sco: " + (when (sco) { true -> "yes"; false -> "no"; null -> "?" }) +
                 ", phone level during first 2 s " + (phoneDbfs?.let { "${it.toInt()} dBFS" } ?: "?") +
                 ", call ended at " + (if (endedAt >= 0) "${endedAt - startedAt} ms" else "?") +
-                ", mode ${mode.key}, pause " + (if (brokeAt >= 0) "may have broken at $brokeAt ms (audio mode normal)" else "held to the end") +
+                ", mode ${mode.key}, signal ${signal.key}, pause " + (if (brokeAt >= 0) "may have broken at $brokeAt ms (audio mode normal)" else "held to the end") +
                 (endedBy?.let { " by $it" } ?: "") + (if (fromTouch) ", placed at the touch" else "") +
                 // stage 5g-26: what goes to OpenAI: the quiet call mode is raised before sending (Loudness.gainFor)
                 (phoneDbfs?.let { db -> helium314.keyboard.latin.voiceapi.Loudness.gainFor(db).let { g ->
@@ -146,7 +159,7 @@ object CarMuteCall {
      */
     @RequiresApi(26)
     fun start(context: Context, mode: CarMuteMode = CarMuteMode.CALL_ON_PHONE, carTail: String? = null): Session {
-        val s = Session(System.currentTimeMillis(), mode)
+        val s = Session(System.currentTimeMillis(), mode, CallSignal.read(context.prefs()))
         session = s
         val app = context.applicationContext
         if (mode == CarMuteMode.VOICE_COMMAND) { startVoiceCommand(app, s, carTail); return s }
@@ -168,6 +181,11 @@ object CarMuteCall {
             app.getSystemService(TelecomManager::class.java)?.registerPhoneAccount(PhoneAccount.builder(handle(app), "AI Keyboard")
                 .setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED)
                 .addSupportedUriScheme(PhoneAccount.SCHEME_SIP)
+                // stage 5g-30: the call is given to the in-call services that take self-managed calls (Bluetooth among
+                // them), so the car hears of it as of an ordinary call
+                .setExtras(android.os.Bundle().apply {
+                    if (Build.VERSION.SDK_INT >= 31) putBoolean(PhoneAccount.EXTRA_ADD_SELF_MANAGED_CALLS_TO_INCALLSERVICE, true)
+                })
                 .build()) ?: return
             registered = true
         } catch (_: Exception) { }
@@ -266,9 +284,17 @@ class AikbCallService : ConnectionService() {
         s?.serviceAt = System.currentTimeMillis()
         // stage 5g-29 (4453: the "dialing" of 5g-28 made the pause ALWAYS slow, with a click of the radio: the radio got
         // ready for an outgoing call but held its music until "active", and "active" waited for the route): active at once,
-        // as in 4452; the route to the phone is asked for alongside, it never holds "active" back
-        c.setActive()
-        s?.let { it.activeAt = System.currentTimeMillis(); it.activeBy = "at once"; it.connection = c; it.log("active") }
+        // as in 4452; the route to the phone is asked for alongside, it never holds "active" back.
+        // Stage 5g-30 (an ordinary call pauses the radio at once): like an ordinary call: "dialing" (the car is told of an
+        // outgoing call at once), then "active" after a fixed [DIALING_MS], never waiting for the route
+        if (s?.signal == CallSignal.LIKE_ORDINARY) {
+            c.setDialing()
+            s?.dialingAt = System.currentTimeMillis(); s?.connection = c; s?.log("dialing")
+            c.activeAfter(DIALING_MS)
+        } else {
+            c.setActive()
+            s?.let { it.activeAt = System.currentTimeMillis(); it.activeBy = "at once"; it.connection = c; it.log("active") }
+        }
         if (s == null || s.endRequested) {
             s?.log("ended before it was up")
             c.setDisconnected(DisconnectCause(DisconnectCause.LOCAL)); c.destroy()
@@ -283,6 +309,16 @@ class AikbCallService : ConnectionService() {
 
     private class MuteConnection(val s: CarMuteCall.Session?) : Connection() {
         private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+
+        /** stage 5g-30: "active" after [ms] of "dialing" */
+        fun activeAfter(ms: Long) {
+            handler.postDelayed({
+                if (state == STATE_DIALING) {
+                    setActive()
+                    s?.let { it.activeAt = System.currentTimeMillis(); it.activeBy = "after dialing $ms ms"; it.log("active") }
+                }
+            }, ms)
+        }
 
         @Deprecated("CallAudioState is deprecated on Android 14, still delivered")
         override fun onCallAudioStateChanged(state: CallAudioState?) {
@@ -362,5 +398,7 @@ class AikbCallService : ConnectionService() {
         const val MOVE_RETRY_MS = 150L
         const val MOVE_TRIES = 3
         const val MOVE_PAUSE_MS = 500L
+        /** stage 5g-30: "dialing" this long before "active" when the call is like an ordinary one */
+        const val DIALING_MS = 150L
     }
 }
